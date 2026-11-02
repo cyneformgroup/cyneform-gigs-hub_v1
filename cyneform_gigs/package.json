@@ -1,0 +1,27 @@
+{
+  "name": "cyneform",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev:api": "pnpm --filter @cyneform/contracts build && pnpm --filter api start:dev",
+    "dev:web": "pnpm --filter web dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm --filter @cyneform/contracts build && pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "format": "prettier --write .",
+    "db:up": "docker compose up -d mariadb",
+    "db:down": "docker compose down",
+    "db:generate": "pnpm --filter api db:generate",
+    "db:migrate": "pnpm --filter api db:migrate",
+    "prepare": "lefthook install && pnpm --filter @cyneform/contracts build"
+  },
+  "devDependencies": {
+    "lefthook": "^2.2.2",
+    "oxlint": "catalog:",
+    "prettier": "catalog:"
+  }
+}
