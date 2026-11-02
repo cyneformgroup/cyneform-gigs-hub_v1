@@ -1,0 +1,29 @@
+{
+  "name": "@cyneform/db",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./client": "./src/client.ts",
+    "./env": "./src/env/index.ts",
+    "./users/schema": "./src/users/schema/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "dotenv": "^18.0.9",
+    "drizzle-orm": "^0.45.4",
+    "mysql2": "^3.24.6",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "drizzle-kit": "^0.31.11",
+    "typescript": "~5.9.3"
+  }
+}

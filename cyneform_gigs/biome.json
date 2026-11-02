@@ -1,0 +1,70 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.6.4/schema.json",
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    },
+    "enabled": true
+  },
+  "css": {
+    "formatter": {
+      "enabled": false
+    },
+    "parser": {
+      "cssModules": false
+    }
+  },
+  "files": {
+    "ignoreUnknown": true
+  },
+  "formatter": {
+    "enabled": true,
+    "formatWithErrors": false,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "javascript": {
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": true
+    }
+  },
+  "linter": {
+    "domains": {
+      "project": "recommended",
+      "react": "recommended",
+      "tailwind": "recommended"
+    },
+    "enabled": true,
+    "rules": {
+      "complexity": {
+        "useArrowFunction": "error"
+      },
+      "preset": "recommended",
+      "suspicious": {
+        "noExplicitAny": "error"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "assist": {
+        "enabled": false
+      },
+      "formatter": {
+        "enabled": false
+      },
+      "includes": ["**/src/components/ui/**/*", "**/globals.css", "**/global.css", "**/*.svg"],
+      "linter": {
+        "enabled": false
+      }
+    }
+  ],
+  "vcs": {
+    "clientKind": "git",
+    "enabled": true,
+    "useIgnoreFile": true
+  }
+}

@@ -1,15 +1,16 @@
-import { useEffect, useState } from 'react';
-import { HealthResponseSchema, type HealthResponse } from '@cyneform/contracts';
+import type { HealthResponse } from "@cyneform/types";
+import { HealthResponseSchema } from "@cyneform/validators";
+import { useEffect, useState } from "react";
 
-export default function App() {
+const App = () => {
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/api/v1/health')
+    fetch("/api/v1/health")
       .then((r) => r.json())
       .then((data) => setHealth(HealthResponseSchema.parse(data)))
-      .catch((e: unknown) => setError(e instanceof Error ? e.message : 'Request failed'));
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : "Request failed"));
   }, []);
 
   return (
@@ -20,8 +21,10 @@ export default function App() {
           ? `API error: ${error}`
           : health
             ? `API ${health.status}, database ${health.database}`
-            : 'Checking API…'}
+            : "Checking API…"}
       </p>
     </main>
   );
-}
+};
+
+export default App;

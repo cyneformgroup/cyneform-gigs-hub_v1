@@ -1,16 +1,16 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { APP_PIPE } from '@nestjs/core';
-import { ZodValidationPipe } from 'nestjs-zod';
-import { validateEnv } from './config/env.js';
-import { DatabaseModule } from './database/database.module.js';
-import { HealthController } from './health/health.controller.js';
+import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
+import { APP_PIPE } from "@nestjs/core";
+import { ZodValidationPipe } from "nestjs-zod";
+import { validateEnv } from "./config/env";
+import { DatabaseModule } from "./database/database.module";
+import { HealthController } from "./health/health.controller";
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['../../.env', '.env'],
+      envFilePath: ["../../.env", ".env"],
       validate: validateEnv,
     }),
     DatabaseModule,

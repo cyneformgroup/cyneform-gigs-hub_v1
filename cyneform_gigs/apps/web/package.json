@@ -1,29 +1,27 @@
 {
-  "name": "web",
+  "name": "@cyneform/web",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "oxlint",
+    "start": "vite preview",
     "preview": "vite preview",
     "typecheck": "tsc -b"
   },
   "dependencies": {
-    "@cyneform/contracts": "workspace:*",
+    "@cyneform/types": "workspace:*",
+    "@cyneform/validators": "workspace:*",
     "@tailwindcss/vite": "^4.3.3",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
-    "@types/node": "catalog:",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
-    "oxlint": "catalog:",
-    "typescript": "catalog:",
     "vite": "^8.3.5"
   }
 }
