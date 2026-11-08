@@ -1,16 +1,19 @@
-import { db, pool } from "@cyneform/db/client";
-import { Global, Module } from "@nestjs/common";
+import { type Db, db, pool } from "@cyneform/db";
+import { Global, Injectable, Module, type OnApplicationShutdown } from "@nestjs/common";
 
-export const DB_POOL = Symbol("DB_POOL");
 export const DB = Symbol("DB");
-export type Db = typeof db;
+export type { Db };
+
+@Injectable()
+class PoolCloser implements OnApplicationShutdown {
+  onApplicationShutdown() {
+    return pool.end();
+  }
+}
 
 @Global()
 @Module({
-  providers: [
-    { provide: DB_POOL, useValue: pool },
-    { provide: DB, useValue: db },
-  ],
-  exports: [DB, DB_POOL],
+  providers: [{ provide: DB, useValue: db }, PoolCloser],
+  exports: [DB],
 })
 export class DatabaseModule {}

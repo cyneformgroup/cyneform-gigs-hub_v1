@@ -11,7 +11,12 @@
     "noEmit": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "types": ["node", "vitest/globals"]
+    "types": ["node", "vitest/globals"],
+    "paths": {
+      "@cyneform/db": ["./packages/db/src"],
+      "@cyneform/types": ["./packages/types/src"],
+      "@cyneform/validators": ["./packages/validators/src"]
+    }
   },
   "include": ["src/**/*", "test/**/*", "vitest.config.ts", "vitest.config.e2e.ts"]
 }

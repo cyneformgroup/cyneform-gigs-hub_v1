@@ -1,12 +1,16 @@
 pre-commit:
   parallel: true
-  commands:
-    biome:
-      root: "cyneform_gigs/"
-      glob: "*.{js,ts,jsx,tsx,json}"
-      run: bunx @biomejs/biome check --write --no-errors-on-unmatched {staged_files}
-      stage_fixed: true
-    typecheck:
-      root: "cyneform_gigs/"
+  jobs:
+    - name: format
+      glob: "*.{ts,tsx,js,json,md,yml,yaml,css}"
+      run: bunx prettier --check {staged_files}
+    - name: lint
       glob: "*.{ts,tsx}"
-      run: sh -c 'dirs=$(echo "{staged_files}" | tr " " "\n" | sed "s#^\./##" | xargs -n1 dirname 2>/dev/null | grep -oE "^apps/(web|api)|^packages/(db|types|validators)" | sort -u); if [ -z "$dirs" ]; then echo "No workspace files changed"; exit 0; fi; for d in $dirs; do (cd "$d" && bun run typecheck) || exit 1; done'
+      run: bunx oxlint {staged_files}
+
+pre-push:
+  jobs:
+    - name: typecheck
+      run: bun run typecheck
+    - name: lint
+      run: bun run lint
