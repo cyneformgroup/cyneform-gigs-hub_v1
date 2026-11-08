@@ -1,30 +1,31 @@
-import type { HealthResponse } from "@cyneform/types";
-import { HealthResponseSchema } from "@cyneform/validators";
-import { useEffect, useState } from "react";
+import { Navigate, Route, Routes } from "react-router";
+import { Layout } from "./components/Layout";
+import { RequireAuth } from "./components/RequireAuth";
+import { Dashboard } from "./pages/Dashboard";
+import { ForgotPassword } from "./pages/ForgotPassword";
+import { Login } from "./pages/Login";
+import { SetPassword } from "./pages/SetPassword";
+import { UserDetailPage } from "./pages/UserDetail";
+import { Users } from "./pages/Users";
 
-const App = () => {
-  const [health, setHealth] = useState<HealthResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch("/api/v1/health")
-      .then((r) => r.json())
-      .then((data) => setHealth(HealthResponseSchema.parse(data)))
-      .catch((e: unknown) => setError(e instanceof Error ? e.message : "Request failed"));
-  }, []);
-
+export default function App() {
   return (
-    <main className="mx-auto max-w-md p-8">
-      <h1 className="text-2xl font-bold text-slate-900">CyneForm</h1>
-      <p className="mt-4 text-sm text-slate-600">
-        {error
-          ? `API error: ${error}`
-          : health
-            ? `API ${health.status}, database ${health.database}`
-            : "Checking API…"}
-      </p>
-    </main>
-  );
-};
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/set-password" element={<SetPassword />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
 
-export default App;
+      <Route element={<RequireAuth />}>
+        <Route element={<Layout />}>
+          <Route index element={<Dashboard />} />
+          <Route element={<RequireAuth permission="users.view" />}>
+            <Route path="users" element={<Users />} />
+            <Route path="users/:id" element={<UserDetailPage />} />
+          </Route>
+        </Route>
+      </Route>
+
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}

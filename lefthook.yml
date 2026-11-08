@@ -2,8 +2,8 @@ pre-commit:
   parallel: true
   jobs:
     - name: format
-      glob: "*.{ts,tsx,js,json,md,yml,yaml,css}"
-      run: bunx prettier --check {staged_files}
+      glob: "*.{ts,tsx,js,json,css}"
+      run: bun --cwd cyneform_gigs node_modules/.bin/biome format --staged
     - name: lint
       glob: "*.{ts,tsx}"
       run: bunx oxlint {staged_files}

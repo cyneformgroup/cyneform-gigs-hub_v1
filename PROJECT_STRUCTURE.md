@@ -3,8 +3,6 @@
 ## Overview
 **Cyneform** is a full-stack monorepo application built with **Bun** (v1.3.14+) as the runtime. It uses Bun's native workspace feature to organize code into reusable packages and separate applications for the API and web frontend.
 
-The project structure is what Claude will be working with day-to-day — the actual source files, configurations, and directory layout beneath `cyneform_gifs/`.
-
 ---
 
 ## Root Directory
@@ -216,9 +214,3 @@ cyneform-gigs/
 ```
 
 ---
-
-## What Claude Will Be Providing
-
-The actual source files listed above — particularly under `cyneform_gigs/apps/` and `cyneform_gigs/packages/` — are the files Claude will be working with. This document maps every source file, its purpose, and the technology stack each part of the codebase uses.
-
-If you need a specific file's contents or want to inspect any part of the structure in more detail, just let me know.

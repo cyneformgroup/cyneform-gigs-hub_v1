@@ -15,6 +15,13 @@
       "when": 1794130886434,
       "tag": "0001_audit_append_only",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1794143530173,
+      "tag": "0002_plaintext_user_emails",
+      "breakpoints": true
     }
   ]
 }

@@ -17,25 +17,13 @@ import {
   userProfiles,
   users,
 } from "@cyneform/db";
-import type {
-  LoginInput,
-  LoginResponse,
-  SessionUser,
-  VerifyOtpInput,
-} from "@cyneform/types";
+import type { LoginInput, LoginResponse, SessionUser, VerifyOtpInput } from "@cyneform/types";
 import { Inject, Injectable } from "@nestjs/common";
 import { AccessService } from "../access/access.service";
 import { signAccessToken } from "../access/jwt";
 import { AuditService } from "../audit/audit.service";
 import type { ClientInfo } from "../common/client-info";
-import {
-  blindIndex,
-  decrypt,
-  otpHash,
-  randomToken,
-  safeEqual,
-  sha256,
-} from "../common/crypto";
+import { blindIndex, otpHash, randomToken, safeEqual, sha256, storedEmail } from "../common/crypto";
 import { AppError, unauthorized } from "../common/errors";
 import { AUTH, env } from "../config/env";
 import { DB, type Db } from "../database/database.module";
@@ -45,8 +33,7 @@ import { fakeVerify, hashPassword, verifyPassword } from "./password";
 const minutes = (n: number) => n * 60_000;
 const invalidCredentials = () =>
   unauthorized("INVALID_CREDENTIALS", "Email or password is incorrect.");
-const invalidOtp = () =>
-  unauthorized("INVALID_OTP", "That code is not valid or has expired.");
+const invalidOtp = () => unauthorized("INVALID_OTP", "That code is not valid or has expired.");
 
 export interface IssuedSession {
   accessToken: string;
@@ -72,9 +59,7 @@ export class AuthService {
     const [user] = await this.db
       .select()
       .from(users)
-      .where(
-        and(eq(users.businessEmailBidx, emailBidx), isNull(users.deletedAt)),
-      )
+      .where(and(eq(users.businessEmailBidx, emailBidx), isNull(users.deletedAt)))
       .limit(1);
 
     if (!user) {
@@ -90,9 +75,7 @@ export class AuthService {
         423,
       );
     }
-    const ok = user.passwordHash
-      ? await verifyPassword(input.password, user.passwordHash)
-      : false;
+    const ok = user.passwordHash ? await verifyPassword(input.password, user.passwordHash) : false;
     if (!ok) {
       await this.attempt(user.id, emailBidx, "bad_password", client);
       await this.applyLockout(user.id);
@@ -110,10 +93,7 @@ export class AuthService {
   }
 
   // ---- Step 2: one-time code -----------------------------------------------------------
-  async verifyOtp(
-    input: VerifyOtpInput,
-    client: ClientInfo,
-  ): Promise<IssuedSession> {
+  async verifyOtp(input: VerifyOtpInput, client: ClientInfo): Promise<IssuedSession> {
     const [challenge] = await this.db
       .select()
       .from(otpChallenges)
@@ -134,7 +114,7 @@ export class AuthService {
       .limit(1);
     if (user?.status !== "active" || user.deletedAt) throw invalidOtp();
 
-    const bidx = blindIndex(decrypt(user.businessEmailCt));
+    const bidx = user.businessEmailBidx;
     if (!safeEqual(otpHash(challenge.id, input.code), challenge.otpHash)) {
       await this.db
         .update(otpChallenges)
@@ -153,10 +133,7 @@ export class AuthService {
   }
 
   // ---- Sessions ------------------------------------------------------------------------
-  private async createSession(
-    user: User,
-    client: ClientInfo,
-  ): Promise<IssuedSession> {
+  private async createSession(user: User, client: ClientInfo): Promise<IssuedSession> {
     const now = new Date();
     const active = await this.db
       .select({ id: authSessions.id })
@@ -169,10 +146,7 @@ export class AuthService {
         ),
       )
       .orderBy(authSessions.createdAt);
-    const surplus = active.slice(
-      0,
-      Math.max(0, active.length - (AUTH.maxSessions - 1)),
-    );
+    const surplus = active.slice(0, Math.max(0, active.length - (AUTH.maxSessions - 1)));
     if (surplus.length) {
       await this.db
         .update(authSessions)
@@ -228,10 +202,7 @@ export class AuthService {
   }
 
   /** Swaps the refresh token for a new one. Presenting an already-used token ends the whole session family. */
-  async refresh(
-    token: string | undefined,
-    client: ClientInfo,
-  ): Promise<IssuedSession> {
+  async refresh(token: string | undefined, client: ClientInfo): Promise<IssuedSession> {
     if (!token) throw unauthorized();
     const hash = sha256(token);
     const [session] = await this.db
@@ -250,12 +221,7 @@ export class AuthService {
         await this.db
           .update(authSessions)
           .set({ revokedAt: new Date(), revokeReason: "reuse_detected" })
-          .where(
-            and(
-              eq(authSessions.familyId, reused.familyId),
-              isNull(authSessions.revokedAt),
-            ),
-          );
+          .where(and(eq(authSessions.familyId, reused.familyId), isNull(authSessions.revokedAt)));
         await this.audit.record({
           actor: null,
           action: "auth.refresh_reuse_detected",
@@ -267,9 +233,7 @@ export class AuthService {
       throw unauthorized();
     }
     const now = new Date();
-    const idle =
-      session.lastActiveAt.getTime() <
-      now.getTime() - minutes(AUTH.idleMinutes);
+    const idle = session.lastActiveAt.getTime() < now.getTime() - minutes(AUTH.idleMinutes);
     if (session.revokedAt || session.expiresAt <= now || idle) {
       if (idle && !session.revokedAt) {
         await this.db
@@ -279,11 +243,7 @@ export class AuthService {
       }
       throw unauthorized("SESSION_ENDED", "Your session has ended.");
     }
-    const [user] = await this.db
-      .select()
-      .from(users)
-      .where(eq(users.id, session.userId))
-      .limit(1);
+    const [user] = await this.db.select().from(users).where(eq(users.id, session.userId)).limit(1);
     if (user?.status !== "active" || user.deletedAt)
       throw unauthorized("SESSION_ENDED", "Your session has ended.");
 
@@ -316,12 +276,7 @@ export class AuthService {
     await this.db
       .update(authSessions)
       .set({ revokedAt: new Date(), revokeReason: "logout" })
-      .where(
-        and(
-          eq(authSessions.refreshTokenHash, sha256(token)),
-          isNull(authSessions.revokedAt),
-        ),
-      );
+      .where(and(eq(authSessions.refreshTokenHash, sha256(token)), isNull(authSessions.revokedAt)));
   }
 
   async sessionUser(userId: string): Promise<SessionUser> {
@@ -338,11 +293,7 @@ export class AuthService {
       .where(eq(users.id, userId))
       .limit(1);
     if (!row) throw unauthorized();
-    const granted = await this.access.effectivePermissions(
-      row.id,
-      row.roleId,
-      row.role,
-    );
+    const granted = await this.access.effectivePermissions(row.id, row.roleId, row.role);
     return {
       id: row.id,
       fullName: row.fullName,
@@ -358,10 +309,7 @@ export class AuthService {
     purpose: "set_password" | "reset_password",
   ): Promise<{ url: string; expiresAt: Date }> {
     const token = randomToken();
-    const hours =
-      purpose === "set_password"
-        ? AUTH.setPasswordHours
-        : AUTH.resetPasswordHours;
+    const hours = purpose === "set_password" ? AUTH.setPasswordHours : AUTH.resetPasswordHours;
     const expiresAt = new Date(Date.now() + hours * 3_600_000);
     await this.db
       .update(oneTimeLinks)
@@ -373,11 +321,7 @@ export class AuthService {
     return { url: `${env.APP_URL}/set-password?token=${token}`, expiresAt };
   }
 
-  async setPassword(
-    token: string,
-    password: string,
-    client: ClientInfo,
-  ): Promise<void> {
+  async setPassword(token: string, password: string, client: ClientInfo): Promise<void> {
     const [link] = await this.db
       .select()
       .from(oneTimeLinks)
@@ -418,22 +362,12 @@ export class AuthService {
           lockedUntil: null,
         })
         .where(eq(users.id, link.userId));
-      await tx
-        .insert(passwordHistory)
-        .values({ userId: link.userId, passwordHash: hash });
-      await tx
-        .update(oneTimeLinks)
-        .set({ usedAt: now })
-        .where(eq(oneTimeLinks.id, link.id));
+      await tx.insert(passwordHistory).values({ userId: link.userId, passwordHash: hash });
+      await tx.update(oneTimeLinks).set({ usedAt: now }).where(eq(oneTimeLinks.id, link.id));
       await tx
         .update(authSessions)
         .set({ revokedAt: now, revokeReason: "password_change" })
-        .where(
-          and(
-            eq(authSessions.userId, link.userId),
-            isNull(authSessions.revokedAt),
-          ),
-        );
+        .where(and(eq(authSessions.userId, link.userId), isNull(authSessions.revokedAt)));
     });
     await this.audit.record({
       actor: { id: link.userId, role: "self" },
@@ -451,21 +385,17 @@ export class AuthService {
       .select({
         id: users.id,
         status: users.status,
+        personalEmail: userProfiles.personalEmail,
         personalEmailCt: userProfiles.personalEmailCt,
       })
       .from(users)
       .innerJoin(userProfiles, eq(userProfiles.userId, users.id))
-      .where(
-        and(
-          eq(users.businessEmailBidx, blindIndex(email)),
-          isNull(users.deletedAt),
-        ),
-      )
+      .where(and(eq(users.businessEmailBidx, blindIndex(email)), isNull(users.deletedAt)))
       .limit(1);
     if (row?.status !== "active") return;
     const { url } = await this.issueLink(row.id, "reset_password");
     await this.mail.send(
-      decrypt(row.personalEmailCt),
+      storedEmail(row.personalEmail, row.personalEmailCt),
       "Reset your CyneForm password",
       `Use this link within ${AUTH.resetPasswordHours} hour to choose a new password:\n${url}`,
     );
@@ -474,21 +404,17 @@ export class AuthService {
   // ---- Helpers -------------------------------------------------------------------------
   private async issueOtp(user: User, client: ClientInfo): Promise<string> {
     const [profile] = await this.db
-      .select({ email: userProfiles.personalEmailCt })
+      .select({ email: userProfiles.personalEmail, legacyEmail: userProfiles.personalEmailCt })
       .from(userProfiles)
       .where(eq(userProfiles.userId, user.id))
       .limit(1);
     await this.db
       .update(otpChallenges)
       .set({ usedAt: new Date() })
-      .where(
-        and(eq(otpChallenges.userId, user.id), isNull(otpChallenges.usedAt)),
-      );
+      .where(and(eq(otpChallenges.userId, user.id), isNull(otpChallenges.usedAt)));
 
     const id = newId();
-    const code = String(
-      crypto.getRandomValues(new Uint32Array(1))[0] % 1_000_000,
-    ).padStart(6, "0");
+    const code = String(crypto.getRandomValues(new Uint32Array(1))[0] % 1_000_000).padStart(6, "0");
     await this.db.insert(otpChallenges).values({
       id,
       userId: user.id,
@@ -497,19 +423,14 @@ export class AuthService {
       ipAddress: client.ip,
     });
     await this.mail.send(
-      decrypt(profile?.email ?? ""),
+      storedEmail(profile?.email ?? null, profile?.legacyEmail ?? null),
       "Your CyneForm sign-in code",
       `Your code is ${code}. It expires in ${AUTH.otpMinutes} minutes. If this was not you, tell your administrator.`,
     );
     return id;
   }
 
-  private attempt(
-    userId: string | null,
-    emailBidx: Buffer,
-    outcome: string,
-    client: ClientInfo,
-  ) {
+  private attempt(userId: string | null, emailBidx: Buffer, outcome: string, client: ClientInfo) {
     return this.db.insert(loginAttempts).values({
       userId,
       emailBidx,
@@ -537,9 +458,7 @@ export class AuthService {
       .update(users)
       .set({
         failedLoginCount: failures,
-        ...(locked
-          ? { lockedUntil: new Date(Date.now() + minutes(AUTH.lockMinutes)) }
-          : {}),
+        ...(locked ? { lockedUntil: new Date(Date.now() + minutes(AUTH.lockMinutes)) } : {}),
       })
       .where(eq(users.id, userId));
     if (locked)
