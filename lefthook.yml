@@ -11,6 +11,6 @@ pre-commit:
 pre-push:
   jobs:
     - name: typecheck
-      run: bun run typecheck
+      run: bun --cwd cyneform_gigs typecheck
     - name: lint
-      run: bun run lint
+      run: bunx oxlint cyneform_gigs
