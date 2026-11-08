@@ -1,10 +1,5 @@
 import { and, authSessions, eq, isNull, roles, users } from "@cyneform/db";
-import {
-  type CanActivate,
-  type ExecutionContext,
-  Inject,
-  Injectable,
-} from "@nestjs/common";
+import { type CanActivate, type ExecutionContext, Inject, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import type { Request } from "express";
 import { AppError, forbidden, unauthorized } from "../common/errors";
@@ -30,8 +25,7 @@ export class AccessGuard implements CanActivate {
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const targets = [ctx.getHandler(), ctx.getClass()];
-    if (this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, targets))
-      return true;
+    if (this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, targets)) return true;
 
     const req = ctx.switchToHttp().getRequest<Request>();
     const header = req.get("authorization");
@@ -67,25 +61,15 @@ export class AccessGuard implements CanActivate {
     const now = new Date();
     if (!row || row.session.expiresAt <= now)
       throw unauthorized("SESSION_ENDED", "Your session has ended.");
-    if (
-      row.session.lastActiveAt.getTime() <
-      now.getTime() - AUTH.idleMinutes * 60_000
-    ) {
+    if (row.session.lastActiveAt.getTime() < now.getTime() - AUTH.idleMinutes * 60_000) {
       await this.db
         .update(authSessions)
         .set({ revokedAt: now, revokeReason: "idle" })
         .where(eq(authSessions.id, claims.sid));
-      throw unauthorized(
-        "SESSION_IDLE",
-        "You were signed out after a period of inactivity.",
-      );
+      throw unauthorized("SESSION_IDLE", "You were signed out after a period of inactivity.");
     }
     if (row.status !== "active" || row.deletedAt)
-      throw new AppError(
-        "ACCOUNT_INACTIVE",
-        "This account is not active.",
-        403,
-      );
+      throw new AppError("ACCOUNT_INACTIVE", "This account is not active.", 403);
 
     if (now.getTime() - row.session.lastActiveAt.getTime() > 60_000) {
       await this.db
@@ -94,11 +78,7 @@ export class AccessGuard implements CanActivate {
         .where(eq(authSessions.id, claims.sid));
     }
 
-    const granted = await this.access.effectivePermissions(
-      claims.sub,
-      row.roleId,
-      row.role,
-    );
+    const granted = await this.access.effectivePermissions(claims.sub, row.roleId, row.role);
     req.user = {
       id: claims.sub,
       role: row.role,
@@ -107,10 +87,7 @@ export class AccessGuard implements CanActivate {
     };
 
     const required =
-      this.reflector.getAllAndOverride<string[] | undefined>(
-        PERMISSIONS_KEY,
-        targets,
-      ) ?? [];
+      this.reflector.getAllAndOverride<string[] | undefined>(PERMISSIONS_KEY, targets) ?? [];
     if (!required.every((code) => granted.has(code))) throw forbidden();
     return true;
   }

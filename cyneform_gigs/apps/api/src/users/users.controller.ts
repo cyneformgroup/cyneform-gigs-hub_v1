@@ -13,13 +13,9 @@ import {
   Req,
 } from "@nestjs/common";
 import type { Request } from "express";
-import {
-  type AuthUser,
-  CurrentUser,
-  RequirePermissions,
-} from "../access/auth-user";
+import { type AuthUser, CurrentUser, RequirePermissions } from "../access/auth-user";
 import { clientInfo } from "../common/client-info";
-import { CreateUserDto, PageQueryDto, SetOverridesDto } from "./users.dto";
+import type { CreateUserDto, PageQueryDto, SetOverridesDto } from "./users.dto";
 import { UsersService } from "./users.service";
 
 @Controller()
@@ -34,11 +30,7 @@ export class UsersController {
 
   @RequirePermissions("users.create")
   @Post("users")
-  create(
-    @Body() dto: CreateUserDto,
-    @CurrentUser() actor: AuthUser,
-    @Req() req: Request,
-  ) {
+  create(@Body() dto: CreateUserDto, @CurrentUser() actor: AuthUser, @Req() req: Request) {
     return this.users.provision(dto, actor, clientInfo(req));
   }
 

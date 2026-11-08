@@ -58,7 +58,9 @@ export const users = mysqlTable(
     roleId: uuidCol("role_id")
       .notNull()
       .references(() => roles.id),
-    businessEmailCt: bytes("business_email_ct", { length: 512 }).notNull(),
+    businessEmail: varchar("business_email", { length: 254 }),
+    /** @deprecated Legacy ciphertext retained for the one-time plaintext backfill. */
+    businessEmailCt: bytes("business_email_ct", { length: 512 }),
     businessEmailBidx: bytes("business_email_bidx", { length: 32 }).notNull(),
     passwordHash: text("password_hash"),
     passwordChangedAt: ts("password_changed_at"),
@@ -91,8 +93,11 @@ export const userProfiles = mysqlTable(
       .references(() => users.id),
     contractorNumber: varchar("contractor_number", { length: 20 }).notNull(),
     fullName: varchar("full_name", { length: 255 }).notNull(),
-    businessEmailCt: bytes("business_email_ct", { length: 512 }).notNull(),
-    personalEmailCt: bytes("personal_email_ct", { length: 512 }).notNull(),
+    /** @deprecated Legacy duplicate ciphertext retained for the one-time backfill. */
+    businessEmailCt: bytes("business_email_ct", { length: 512 }),
+    personalEmail: varchar("personal_email", { length: 254 }),
+    /** @deprecated Legacy ciphertext retained for the one-time plaintext backfill. */
+    personalEmailCt: bytes("personal_email_ct", { length: 512 }),
     personalEmailBidx: bytes("personal_email_bidx", { length: 32 }).notNull(),
     phoneCt: bytes("phone_ct", { length: 512 }),
     idNumberCt: bytes("id_number_ct", { length: 512 }),

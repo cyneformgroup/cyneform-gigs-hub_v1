@@ -12,8 +12,14 @@ const EnvSchema = z.object({
   ENCRYPTION_KEYS: z.string().min(1),
   BLIND_INDEX_KEY: z.string().min(32),
   SEED_ADMIN_NAME: z.string().default("Managing Partner"),
-  SEED_ADMIN_BUSINESS_EMAIL: z.email().optional(),
-  SEED_ADMIN_PERSONAL_EMAIL: z.email().optional(),
+  SEED_ADMIN_BUSINESS_EMAIL: z.email().default("admin@cyneform.test"),
+  SEED_ADMIN_PERSONAL_EMAIL: z.email().default("admin.personal@cyneform.test"),
+  SEED_STAFF_ADMIN_NAME: z.string().default("Office Administrator"),
+  SEED_STAFF_ADMIN_BUSINESS_EMAIL: z.email().default("office.admin@cyneform.test"),
+  SEED_STAFF_ADMIN_PERSONAL_EMAIL: z.email().default("office.admin.personal@cyneform.test"),
+  SEED_BDP_NAME: z.string().default("Jane Wanjiku"),
+  SEED_BDP_BUSINESS_EMAIL: z.email().default("jane@cyneform.test"),
+  SEED_BDP_PERSONAL_EMAIL: z.email().default("jane.personal@cyneform.test"),
 });
 
 const parsed = EnvSchema.safeParse(process.env);

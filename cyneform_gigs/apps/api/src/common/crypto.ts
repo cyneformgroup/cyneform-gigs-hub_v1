@@ -38,6 +38,13 @@ export function decrypt(blob: Buffer): string {
   return Buffer.concat([decipher.update(blob.subarray(29)), decipher.final()]).toString("utf8");
 }
 
+/** Reads a plaintext email, with fallback for rows awaiting the legacy-email migration. */
+export function storedEmail(plain: string | null, legacyCiphertext: Buffer | null): string {
+  if (plain) return plain;
+  if (legacyCiphertext) return decrypt(legacyCiphertext);
+  throw new Error("A user email is missing from the database.");
+}
+
 /** Keyed hash so encrypted values can still be looked up and kept unique. */
 export const blindIndex = (value: string): Buffer =>
   createHmac("sha256", env.BLIND_INDEX_KEY).update(value.trim().toLowerCase()).digest();
