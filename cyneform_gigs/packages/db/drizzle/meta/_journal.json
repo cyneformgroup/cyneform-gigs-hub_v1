@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1794130874000,
+      "tag": "0000_phase1_identity",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1794130886434,
+      "tag": "0001_audit_append_only",
+      "breakpoints": true
+    }
+  ]
+}

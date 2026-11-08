@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
+    ".": "./src/index.ts",
     "./client": "./src/client.ts",
     "./env": "./src/env/index.ts",
     "./users/schema": "./src/users/schema/index.ts"
@@ -19,11 +20,14 @@
     "dotenv": "^18.0.9",
     "drizzle-orm": "^0.45.4",
     "mysql2": "^3.24.6",
-    "zod": "^4.6.7"
+    "zod": "^4.6.7",
+    "@cyneform/validators": "workspace:*",
+    "@cyneform/types": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
     "drizzle-kit": "^0.31.11",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "@types/bun": "^1.2.0"
   }
 }

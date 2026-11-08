@@ -17,7 +17,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@cyneform/validators": "workspace:*"
+    "@cyneform/validators": "workspace:*",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "typescript": "~5.9.3"

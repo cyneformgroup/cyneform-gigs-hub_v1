@@ -1,0 +1,73 @@
+import { PERMISSIONS } from "@cyneform/validators";
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Put,
+  Query,
+  Req,
+} from "@nestjs/common";
+import type { Request } from "express";
+import { type AuthUser, CurrentUser, RequirePermissions } from "../access/auth-user";
+import { clientInfo } from "../common/client-info";
+import type { CreateUserDto, PageQueryDto, SetOverridesDto } from "./users.dto";
+import type { UsersService } from "./users.service";
+
+@Controller()
+export class UsersController {
+  constructor(private readonly users: UsersService) {}
+
+  @RequirePermissions("users.view")
+  @Get("users")
+  list(@Query() q: PageQueryDto) {
+    return this.users.list(q);
+  }
+
+  @RequirePermissions("users.create")
+  @Post("users")
+  create(@Body() dto: CreateUserDto, @CurrentUser() actor: AuthUser, @Req() req: Request) {
+    return this.users.provision(dto, actor, clientInfo(req));
+  }
+
+  @RequirePermissions("users.view")
+  @Get("users/:id")
+  detail(
+    @Param("id", ParseUUIDPipe) id: string,
+    @CurrentUser() actor: AuthUser,
+    @Req() req: Request,
+  ) {
+    return this.users.detail(id, actor, clientInfo(req));
+  }
+
+  @RequirePermissions("users.create")
+  @Post("users/:id/invite")
+  @HttpCode(204)
+  invite(
+    @Param("id", ParseUUIDPipe) id: string,
+    @CurrentUser() actor: AuthUser,
+    @Req() req: Request,
+  ) {
+    return this.users.resendInvite(id, actor, clientInfo(req));
+  }
+
+  @RequirePermissions("permissions.grant")
+  @Put("users/:id/permissions")
+  setPermissions(
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body() dto: SetOverridesDto,
+    @CurrentUser() actor: AuthUser,
+    @Req() req: Request,
+  ) {
+    return this.users.setOverrides(id, dto, actor, clientInfo(req));
+  }
+
+  @RequirePermissions("permissions.view")
+  @Get("permissions")
+  catalogue() {
+    return { permissions: PERMISSIONS };
+  }
+}

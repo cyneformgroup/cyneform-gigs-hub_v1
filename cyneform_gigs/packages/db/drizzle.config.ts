@@ -1,9 +1,11 @@
+import { config } from "dotenv";
 import { defineConfig } from "drizzle-kit";
-import { env } from "./src/env/index";
+
+config({ path: "../../.env" }); // drizzle-kit runs with packages/db as the working directory
 
 export default defineConfig({
   dialect: "mysql",
-  schema: "./src/*/schema/index.ts",
-  out: "./src/migrations",
-  dbCredentials: { url: env.DATABASE_URL },
+  schema: "./src/schema.ts",
+  out: "./drizzle",
+  dbCredentials: { url: process.env.DATABASE_URL as string },
 });
