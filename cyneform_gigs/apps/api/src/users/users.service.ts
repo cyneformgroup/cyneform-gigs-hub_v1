@@ -22,16 +22,16 @@ import type {
 } from "@cyneform/types";
 import { PERMISSIONS } from "@cyneform/validators";
 import { Inject, Injectable } from "@nestjs/common";
-import type { AccessService } from "../access/access.service";
+import { AccessService } from "../access/access.service";
 import type { AuthUser } from "../access/auth-user";
-import type { AuditService } from "../audit/audit.service";
-import type { AuthService } from "../auth/auth.service";
+import { AuditService } from "../audit/audit.service";
+import { AuthService } from "../auth/auth.service";
 import type { ClientInfo } from "../common/client-info";
 import { blindIndex, currentKeyId, decrypt, encrypt } from "../common/crypto";
 import { badRequest, conflict, forbidden, notFound } from "../common/errors";
 import { AUTH } from "../config/env";
 import { DB, type Db } from "../database/database.module";
-import type { MailService } from "../mail/mail.service";
+import { MailService } from "../mail/mail.service";
 
 type Actor = Pick<AuthUser, "id" | "role" | "permissions"> | null; // null = system (seed)
 
@@ -41,9 +41,13 @@ const iso = (d: Date | null) => (d ? d.toISOString() : null);
 export class UsersService {
   constructor(
     @Inject(DB) private readonly db: Db,
+    @Inject(AccessService)
     private readonly access: AccessService,
+    @Inject(AuthService)
     private readonly auth: AuthService,
+    @Inject(AuditService)
     private readonly audit: AuditService,
+    @Inject(MailService)
     private readonly mail: MailService,
   ) {}
 
@@ -116,7 +120,11 @@ export class UsersService {
     };
   }
 
-  async detail(id: string, actor: Actor, client?: ClientInfo): Promise<UserDetail> {
+  async detail(
+    id: string,
+    actor: Actor,
+    client?: ClientInfo,
+  ): Promise<UserDetail> {
     const [r] = await this.db
       .select({
         ...this.summaryColumns,
@@ -138,9 +146,16 @@ export class UsersService {
         expiresAt: userPermissionOverrides.expiresAt,
       })
       .from(userPermissionOverrides)
-      .innerJoin(permissions, eq(permissions.id, userPermissionOverrides.permissionId))
+      .innerJoin(
+        permissions,
+        eq(permissions.id, userPermissionOverrides.permissionId),
+      )
       .where(eq(userPermissionOverrides.userId, id));
-    const effective = await this.access.effectivePermissions(id, r.roleId, r.role);
+    const effective = await this.access.effectivePermissions(
+      id,
+      r.roleId,
+      r.role,
+    );
     if (actor)
       await this.audit.record({
         actor,
@@ -169,7 +184,13 @@ export class UsersService {
     actor: Actor,
     client?: ClientInfo,
   ): Promise<UserSummary> {
-    if (input.role !== "bdp" && actor && !actor.permissions.has("users.manage_admins"))
+    // Keep the service resilient if a caller does not materialize the schema default.
+    const roleCode = input.role ?? "bdp";
+    if (
+      roleCode !== "bdp" &&
+      actor &&
+      !actor.permissions.has("users.manage_admins")
+    )
       throw forbidden();
 
     const businessBidx = blindIndex(input.businessEmail);
@@ -177,9 +198,13 @@ export class UsersService {
     const [role] = await this.db
       .select({ id: roles.id })
       .from(roles)
-      .where(eq(roles.code, input.role))
+      .where(eq(roles.code, roleCode))
       .limit(1);
-    if (!role) throw badRequest("ROLE_MISSING", "Roles are not seeded. Run the database seed.");
+    if (!role)
+      throw badRequest(
+        "ROLE_MISSING",
+        "Roles are not seeded. Run the database seed.",
+      );
 
     const [dupe] = await this.db
       .select({ id: users.id })
@@ -191,9 +216,16 @@ export class UsersService {
       .from(userProfiles)
       .where(eq(userProfiles.personalEmailBidx, personalBidx))
       .limit(1);
-    if (dupe) throw conflict("EMAIL_TAKEN", "A user with this business email already exists.");
+    if (dupe)
+      throw conflict(
+        "EMAIL_TAKEN",
+        "A user with this business email already exists.",
+      );
     if (dupePersonal)
-      throw conflict("EMAIL_TAKEN", "A user with this personal email already exists.");
+      throw conflict(
+        "EMAIL_TAKEN",
+        "A user with this personal email already exists.",
+      );
 
     const id = newId();
     await this.db.transaction(async (tx) => {
@@ -233,16 +265,23 @@ export class UsersService {
       action: "users.created",
       targetType: "user",
       targetId: id,
-      details: { role: input.role },
+      details: { role: roleCode },
       client,
     });
     return this.detail(id, null);
   }
 
-  async resendInvite(id: string, actor: Actor, client?: ClientInfo): Promise<void> {
+  async resendInvite(
+    id: string,
+    actor: Actor,
+    client?: ClientInfo,
+  ): Promise<void> {
     const d = await this.detail(id, null);
     if (d.passwordSet)
-      throw badRequest("ALREADY_ACTIVE", "This person has already set a password.");
+      throw badRequest(
+        "ALREADY_ACTIVE",
+        "This person has already set a password.",
+      );
     await this.sendInvite(id, d.fullName, d.personalEmail);
     await this.audit.record({
       actor,
@@ -259,11 +298,19 @@ export class UsersService {
     actor: NonNullable<Actor>,
     client?: ClientInfo,
   ): Promise<UserDetail> {
-    if (id === actor.id) throw forbidden("SELF_GRANT", "You cannot change your own permissions.");
+    if (id === actor.id)
+      throw forbidden("SELF_GRANT", "You cannot change your own permissions.");
     const target = await this.detail(id, null);
     if (target.role === "super_admin")
-      throw forbidden("PROTECTED_USER", "Super Admin permissions cannot be changed.");
-    if (target.role === "admin" && !actor.permissions.has("users.manage_admins")) throw forbidden();
+      throw forbidden(
+        "PROTECTED_USER",
+        "Super Admin permissions cannot be changed.",
+      );
+    if (
+      target.role === "admin" &&
+      !actor.permissions.has("users.manage_admins")
+    )
+      throw forbidden();
 
     const catalogue = new Map(PERMISSIONS.map((p) => [p.code as string, p]));
     for (const o of input.overrides) {
@@ -280,12 +327,15 @@ export class UsersService {
     const idOf = new Map(rows.map((r) => [r.code, r.id]));
 
     await this.db.transaction(async (tx) => {
-      await tx.delete(userPermissionOverrides).where(eq(userPermissionOverrides.userId, id));
+      await tx
+        .delete(userPermissionOverrides)
+        .where(eq(userPermissionOverrides.userId, id));
       if (input.overrides.length) {
         await tx.insert(userPermissionOverrides).values(
           input.overrides.map((o) => {
             const permissionId = idOf.get(o.permissionCode);
-            if (!permissionId) throw new Error(`Permission not found: ${o.permissionCode}`);
+            if (!permissionId)
+              throw new Error(`Permission not found: ${o.permissionCode}`);
             return {
               userId: id,
               permissionId,
@@ -309,7 +359,11 @@ export class UsersService {
     return this.detail(id, null);
   }
 
-  private async sendInvite(userId: string, name: string, personalEmail: string) {
+  private async sendInvite(
+    userId: string,
+    name: string,
+    personalEmail: string,
+  ) {
     const { url } = await this.auth.issueLink(userId, "set_password");
     await this.mail.send(
       personalEmail,
