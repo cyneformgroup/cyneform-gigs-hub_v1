@@ -1,8 +1,10 @@
 import {
   and,
+  authSessions,
   count,
   desc,
   eq,
+  inArray,
   isNull,
   like,
   newId,
@@ -10,13 +12,18 @@ import {
   roles,
   userPermissionOverrides,
   userProfiles,
+  userStatusHistory,
   users,
 } from "@cyneform/db";
 import type {
+  ChangeStatusInput,
   CreateUserInput,
   PageQuery,
   RoleCode,
   SetOverridesInput,
+  StatusHistoryItem,
+  UpdateMeInput,
+  UpdateUserInput,
   UserDetail,
   UserSummary,
 } from "@cyneform/types";
@@ -317,6 +324,148 @@ export class UsersService {
       client,
     });
     return this.detail(id, null);
+  }
+
+  // ---- Phase 2: profiles and account status ---------------------------------------------
+
+  /** Display names for a set of user ids. */
+  async names(ids: (string | null)[]): Promise<Map<string, string>> {
+    const unique = [...new Set(ids.filter((i): i is string => !!i))];
+    if (!unique.length) return new Map();
+    const rows = await this.db
+      .select({ id: userProfiles.userId, name: userProfiles.fullName })
+      .from(userProfiles)
+      .where(inArray(userProfiles.userId, unique));
+    return new Map(rows.map((r) => [r.id, r.name]));
+  }
+
+  private async loadTarget(id: string) {
+    const [t] = await this.db
+      .select({ id: users.id, status: users.status, role: roles.code })
+      .from(users)
+      .innerJoin(roles, eq(roles.id, users.roleId))
+      .where(and(eq(users.id, id), isNull(users.deletedAt)))
+      .limit(1);
+    if (!t) throw notFound("User not found.");
+    return t;
+  }
+
+  private applyProfile(id: string, input: UpdateUserInput) {
+    const set: Partial<typeof userProfiles.$inferInsert> = {};
+    if (input.fullName) set.fullName = input.fullName;
+    if (input.phone) set.phoneCt = encrypt(input.phone);
+    if (input.location !== undefined) set.location = input.location;
+    return this.db.update(userProfiles).set(set).where(eq(userProfiles.userId, id));
+  }
+
+  /** Admin edit. Only the Super Admin (users.manage_admins) may edit Admin or Super Admin profiles. */
+  async update(
+    id: string,
+    input: UpdateUserInput,
+    actor: NonNullable<Actor>,
+    client?: ClientInfo,
+  ): Promise<UserDetail> {
+    const t = await this.loadTarget(id);
+    if (t.role !== "bdp" && t.id !== actor.id && !actor.permissions.has("users.manage_admins"))
+      throw forbidden();
+    await this.applyProfile(id, input);
+    await this.audit.record({
+      actor,
+      action: "users.updated",
+      targetType: "user",
+      targetId: id,
+      details: { fields: Object.keys(input) },
+      client,
+    });
+    return this.detail(id, null);
+  }
+
+  /** Self edit: phone and location only. */
+  async updateSelf(
+    actor: NonNullable<Actor>,
+    input: UpdateMeInput,
+    client?: ClientInfo,
+  ): Promise<UserDetail> {
+    await this.applyProfile(actor.id, input);
+    await this.audit.record({
+      actor,
+      action: "users.profile_updated",
+      targetType: "user",
+      targetId: actor.id,
+      details: { fields: Object.keys(input) },
+      client,
+    });
+    return this.detail(actor.id, null);
+  }
+
+  /** Freeze, put on leave, deactivate or reactivate. Anything but "active" ends the person's sessions at once. */
+  async changeStatus(
+    id: string,
+    input: ChangeStatusInput,
+    actor: NonNullable<Actor>,
+    client?: ClientInfo,
+  ): Promise<UserDetail> {
+    if (id === actor.id) throw forbidden("SELF_STATUS", "You cannot change your own status.");
+    const t = await this.loadTarget(id);
+    if (t.role === "super_admin")
+      throw forbidden("PROTECTED_USER", "The Super Admin account cannot be changed.");
+    if (t.role === "admin" && !actor.permissions.has("users.manage_admins")) throw forbidden();
+    if (t.status === input.status)
+      throw badRequest("NO_CHANGE", `This account is already ${input.status.replace("_", " ")}.`);
+
+    const now = new Date();
+    await this.db.transaction(async (tx) => {
+      await tx
+        .update(users)
+        .set({
+          status: input.status,
+          statusReason: input.reason,
+          statusChangedAt: now,
+          statusChangedBy: actor.id,
+          freezeStartedAt: input.status === "frozen" ? now : null,
+          ...(input.status === "active" ? { failedLoginCount: 0, lockedUntil: null } : {}),
+        })
+        .where(eq(users.id, id));
+      await tx.insert(userStatusHistory).values({
+        userId: id,
+        fromStatus: t.status,
+        toStatus: input.status,
+        reason: input.reason,
+        changedBy: actor.id,
+      });
+      if (input.status !== "active") {
+        await tx
+          .update(authSessions)
+          .set({ revokedAt: now, revokeReason: `status_${input.status}` })
+          .where(and(eq(authSessions.userId, id), isNull(authSessions.revokedAt)));
+      }
+    });
+    await this.audit.record({
+      actor,
+      action: "users.status_changed",
+      targetType: "user",
+      targetId: id,
+      details: { from: t.status, to: input.status, reason: input.reason },
+      client,
+    });
+    return this.detail(id, null);
+  }
+
+  async history(id: string): Promise<StatusHistoryItem[]> {
+    const rows = await this.db
+      .select()
+      .from(userStatusHistory)
+      .where(eq(userStatusHistory.userId, id))
+      .orderBy(desc(userStatusHistory.createdAt));
+    const names = await this.names(rows.map((r) => r.changedBy));
+    return rows.map((r) => ({
+      id: r.id,
+      fromStatus: r.fromStatus,
+      toStatus: r.toStatus,
+      reason: r.reason,
+      changedByName: r.changedBy ? (names.get(r.changedBy) ?? null) : null,
+      createdAt: r.createdAt.toISOString(),
+    }));
   }
 
   private async sendInvite(userId: string, name: string, personalEmail: string) {

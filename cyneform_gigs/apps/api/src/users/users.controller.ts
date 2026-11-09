@@ -7,6 +7,7 @@ import {
   Inject,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Put,
   Query,
@@ -15,7 +16,13 @@ import {
 import type { Request } from "express";
 import { type AuthUser, CurrentUser, RequirePermissions } from "../access/auth-user";
 import { clientInfo } from "../common/client-info";
-import type { CreateUserDto, PageQueryDto, SetOverridesDto } from "./users.dto";
+import type {
+  ChangeStatusDto,
+  CreateUserDto,
+  PageQueryDto,
+  SetOverridesDto,
+  UpdateUserDto,
+} from "./users.dto";
 import { UsersService } from "./users.service";
 
 @Controller()
@@ -64,6 +71,35 @@ export class UsersController {
     @Req() req: Request,
   ) {
     return this.users.setOverrides(id, dto, actor, clientInfo(req));
+  }
+
+  @RequirePermissions("users.edit")
+  @Patch("users/:id")
+  update(
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body() dto: UpdateUserDto,
+    @CurrentUser() actor: AuthUser,
+    @Req() req: Request,
+  ) {
+    return this.users.update(id, dto, actor, clientInfo(req));
+  }
+
+  @RequirePermissions("users.manage_status")
+  @Post("users/:id/status")
+  @HttpCode(200)
+  changeStatus(
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body() dto: ChangeStatusDto,
+    @CurrentUser() actor: AuthUser,
+    @Req() req: Request,
+  ) {
+    return this.users.changeStatus(id, dto, actor, clientInfo(req));
+  }
+
+  @RequirePermissions("users.view")
+  @Get("users/:id/status-history")
+  history(@Param("id", ParseUUIDPipe) id: string) {
+    return this.users.history(id);
   }
 
   @RequirePermissions("permissions.view")
