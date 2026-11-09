@@ -19,6 +19,18 @@ export const PERMISSIONS = [
     superAdminOnly: false,
   },
   {
+    code: "users.edit",
+    module: "users",
+    description: "Edit user profiles",
+    superAdminOnly: false,
+  },
+  {
+    code: "users.manage_status",
+    module: "users",
+    description: "Freeze, deactivate or reactivate users",
+    superAdminOnly: false,
+  },
+  {
     code: "users.manage_admins",
     module: "users",
     description: "Create or change Admin accounts",
@@ -36,11 +48,39 @@ export const PERMISSIONS = [
     description: "Grant or deny permissions per user",
     superAdminOnly: false,
   },
+  {
+    code: "leave.request",
+    module: "leave",
+    description: "Request leave",
+    superAdminOnly: false,
+  },
+  {
+    code: "leave.view_all",
+    module: "leave",
+    description: "See everyone’s leave requests",
+    superAdminOnly: false,
+  },
+  {
+    code: "leave.decide",
+    module: "leave",
+    description: "Approve or reject leave",
+    superAdminOnly: false,
+  },
 ] as const;
 export type PermissionCode = (typeof PERMISSIONS)[number]["code"];
 
 export const ROLE_DEFAULTS: Record<RoleCode, readonly PermissionCode[]> = {
   super_admin: PERMISSIONS.map((p) => p.code),
-  admin: ["users.view", "users.create", "permissions.view", "permissions.grant"],
-  bdp: [],
+  admin: [
+    "users.view",
+    "users.create",
+    "users.edit",
+    "users.manage_status",
+    "permissions.view",
+    "permissions.grant",
+    "leave.request",
+    "leave.view_all",
+    "leave.decide",
+  ],
+  bdp: ["leave.request"],
 };

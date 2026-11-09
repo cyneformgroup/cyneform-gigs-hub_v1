@@ -107,10 +107,13 @@ export function Alert({
 
 const badgeStyles: Record<string, string> = {
   active: "bg-emerald-50 text-emerald-700",
+  approved: "bg-emerald-50 text-emerald-700",
   frozen: "bg-sky-50 text-sky-700",
   on_leave: "bg-amber-50 text-amber-700",
-  deactivated: "bg-slate-100 text-slate-600",
   pending: "bg-amber-50 text-amber-700",
+  rejected: "bg-red-50 text-red-700",
+  deactivated: "bg-slate-100 text-slate-600",
+  cancelled: "bg-slate-100 text-slate-600",
 };
 
 export function Badge({ value }: { value: string }) {

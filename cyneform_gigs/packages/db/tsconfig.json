@@ -8,13 +8,7 @@
     "strict": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "types": [],
-    "paths": {
-      "@cyneform/types": ["./src/index.ts"],
-      "@cyneform/types/*": ["./src/*"],
-      "@cyneform/validators": ["./src/index.ts"],
-      "@cyneform/validators/*": ["./src/*"]
-    }
+    "types": []
   },
   "include": ["src/**/*", "drizzle.config.ts"]
 }

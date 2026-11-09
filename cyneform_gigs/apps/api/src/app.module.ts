@@ -8,6 +8,7 @@ import { AuthModule } from "./auth/auth.module";
 import { ErrorFilter } from "./common/errors";
 import { DatabaseModule } from "./database/database.module";
 import { HealthController } from "./health/health.controller";
+import { LeaveModule } from "./leave/leave.module";
 import { MailModule } from "./mail/mail.module";
 import { UsersModule } from "./users/users.module";
 
@@ -20,6 +21,7 @@ import { UsersModule } from "./users/users.module";
     AccessModule,
     AuthModule,
     UsersModule,
+    LeaveModule,
   ],
   controllers: [HealthController],
   providers: [

@@ -50,7 +50,7 @@ export function refreshSession(): Promise<AuthSession | null> {
 }
 
 interface Options {
-  method?: "GET" | "POST" | "PUT" | "DELETE";
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
 }
 

@@ -4,6 +4,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useParams } from "react-router";
 import { Alert, Badge, Button, Card, Field, PageHeader } from "../components/ui";
+import { ProfileForm } from "../components/users/ProfileForm";
+import { StatusPanel } from "../components/users/StatusPanel";
 import { api, messageOf } from "../lib/api";
 import { useAuth } from "../lib/auth";
 
@@ -169,6 +171,8 @@ export function UserDetailPage() {
         )}
       </Card>
 
+      {can("users.edit") && <ProfileForm key={`profile-${user.id}`} user={user} />}
+      <StatusPanel key={`status-${user.id}`} user={user} />
       {editable && <PermissionEditor key={user.id} user={user} />}
     </>
   );

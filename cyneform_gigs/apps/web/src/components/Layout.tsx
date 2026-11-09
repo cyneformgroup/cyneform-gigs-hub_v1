@@ -3,8 +3,15 @@ import { useAuth } from "../lib/auth";
 import { Button } from "./ui";
 
 const nav = [
-  { to: "/", label: "Dashboard", end: true, permission: undefined },
-  { to: "/users", label: "Users", end: false, permission: "users.view" },
+  { to: "/", label: "Dashboard", end: true, any: [] as string[] },
+  { to: "/users", label: "Users", end: false, any: ["users.view"] },
+  {
+    to: "/leave",
+    label: "Leave",
+    end: false,
+    any: ["leave.request", "leave.view_all"],
+  },
+  { to: "/profile", label: "My profile", end: false, any: [] as string[] },
 ];
 
 export function Layout() {
@@ -22,7 +29,7 @@ export function Layout() {
         <p className="mb-6 text-lg font-semibold tracking-tight text-brand-700">CyneForm</p>
         <nav className="space-y-1">
           {nav
-            .filter((item) => !item.permission || can(item.permission))
+            .filter((item) => item.any.length === 0 || item.any.some((p) => can(p)))
             .map((item) => (
               <NavLink
                 key={item.to}
