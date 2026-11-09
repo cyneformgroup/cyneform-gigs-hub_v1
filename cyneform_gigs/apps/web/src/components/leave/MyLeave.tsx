@@ -15,6 +15,7 @@ export function MyLeave() {
     queryKey: ["leave", "mine"],
     queryFn: () => api<LeaveRequest[]>("/leave/mine"),
   });
+  const todayEAT = new Date().toLocaleDateString("en-CA", { timeZone: "Africa/Nairobi" });
 
   const create = useMutation({
     mutationFn: (body: CreateLeaveInput) => api<LeaveRequest>("/leave", { method: "POST", body }),
@@ -95,7 +96,8 @@ export function MyLeave() {
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 <Badge value={r.status} />
-                {(r.status === "pending" || r.status === "approved") && (
+                {(r.status === "pending" ||
+                  (r.status === "approved" && r.startDate > todayEAT)) && (
                   <Button
                     variant="secondary"
                     onClick={() => cancel.mutate(r.id)}
