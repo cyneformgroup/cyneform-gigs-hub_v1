@@ -18,6 +18,7 @@ import {
 import type {
   ChangeStatusInput,
   CreateUserInput,
+  DeleteUserInput,
   PageQuery,
   RoleCode,
   SetOverridesInput,
@@ -64,6 +65,7 @@ export class UsersService {
     fullName: userProfiles.fullName,
     businessEmail: users.businessEmail,
     legacyBusinessEmailCt: users.businessEmailCt,
+    deactivationType: users.deactivationType,
     role: roles.code,
     status: users.status,
     passwordHash: users.passwordHash,
@@ -78,6 +80,7 @@ export class UsersService {
     fullName: string;
     businessEmail: string | null;
     legacyBusinessEmailCt: Buffer | null;
+    deactivationType: UserSummary["deactivationType"];
     role: RoleCode;
     status: UserSummary["status"];
     passwordHash: string | null;
@@ -92,6 +95,7 @@ export class UsersService {
       businessEmail: storedEmail(r.businessEmail, r.legacyBusinessEmailCt),
       role: r.role,
       status: r.status,
+      deactivationType: r.deactivationType,
       passwordSet: !!r.passwordHash,
       location: r.location,
       lastLoginAt: iso(r.lastLoginAt),
@@ -137,6 +141,7 @@ export class UsersService {
         personalEmail: userProfiles.personalEmail,
         personalEmailCt: userProfiles.personalEmailCt,
         phoneCt: userProfiles.phoneCt,
+        deactivationType: users.deactivationType,
       })
       .from(users)
       .innerJoin(userProfiles, eq(userProfiles.userId, users.id))
@@ -179,7 +184,10 @@ export class UsersService {
 
   /** Creates the account and emails a one-time set-password link. Nobody's password is ever chosen for them. */
   async provision(
-    input: Omit<CreateUserInput, "role"> & { role: RoleCode },
+    input: Omit<CreateUserInput, "role" | "phone" | "location" | "idNumber"> &
+      Partial<Pick<CreateUserInput, "phone" | "location" | "idNumber">> & {
+        role: RoleCode;
+      },
     actor: Actor,
     client?: ClientInfo,
   ): Promise<UserSummary> {
@@ -241,6 +249,7 @@ export class UsersService {
         phoneCt: input.phone ? encrypt(input.phone) : null,
         location: input.location ?? null,
         encKeyId: currentKeyId,
+        idNumberCt: input.idNumber ? encrypt(input.idNumber) : null,
       });
     });
 
@@ -341,7 +350,12 @@ export class UsersService {
 
   private async loadTarget(id: string) {
     const [t] = await this.db
-      .select({ id: users.id, status: users.status, role: roles.code })
+      .select({
+        id: users.id,
+        status: users.status,
+        role: roles.code,
+        deactivationType: users.deactivationType,
+      })
       .from(users)
       .innerJoin(roles, eq(roles.id, users.roleId))
       .where(and(eq(users.id, id), isNull(users.deletedAt)))
@@ -412,8 +426,18 @@ export class UsersService {
     if (t.role === "admin" && !actor.permissions.has("users.manage_admins")) throw forbidden();
     if (t.status === input.status)
       throw badRequest("NO_CHANGE", `This account is already ${input.status.replace("_", " ")}.`);
+    if (t.status === "deactivated") {
+      if (input.status !== "active")
+        throw badRequest("INVALID_TRANSITION", "A deactivated account can only be reactivated.");
+      if (t.deactivationType === "permanent")
+        throw badRequest(
+          "PERMANENT",
+          "This account was deactivated permanently and cannot be reactivated.",
+        );
+    }
 
     const now = new Date();
+    const deactivating = input.status === "deactivated";
     await this.db.transaction(async (tx) => {
       await tx
         .update(users)
@@ -423,6 +447,8 @@ export class UsersService {
           statusChangedAt: now,
           statusChangedBy: actor.id,
           freezeStartedAt: input.status === "frozen" ? now : null,
+          deactivationType: deactivating ? (input.deactivationType ?? "temporary") : null,
+          deactivatedAt: deactivating ? now : null,
           ...(input.status === "active" ? { failedLoginCount: 0, lockedUntil: null } : {}),
         })
         .where(eq(users.id, id));
@@ -445,10 +471,67 @@ export class UsersService {
       action: "users.status_changed",
       targetType: "user",
       targetId: id,
-      details: { from: t.status, to: input.status, reason: input.reason },
+      details: {
+        from: t.status,
+        to: input.status,
+        reason: input.reason,
+        deactivationType: input.deactivationType,
+      },
       client,
     });
     return this.detail(id, null);
+  }
+
+  /** Super Admin only. Soft delete: locked out and hidden now; personal data is anonymised after 30 days (daily job, Phase 12). */
+  async remove(
+    id: string,
+    input: DeleteUserInput,
+    actor: NonNullable<Actor>,
+    client?: ClientInfo,
+  ): Promise<void> {
+    if (id === actor.id) throw forbidden("SELF_DELETE", "You cannot delete your own account.");
+    const t = await this.loadTarget(id);
+    if (t.role === "super_admin")
+      throw forbidden("PROTECTED_USER", "The Super Admin account cannot be deleted.");
+    const person = await this.detail(id, null);
+
+    const now = new Date();
+    await this.db.transaction(async (tx) => {
+      await tx
+        .update(users)
+        .set({
+          status: "deleted",
+          statusReason: input.reason,
+          statusChangedAt: now,
+          statusChangedBy: actor.id,
+          deletedAt: now,
+        })
+        .where(eq(users.id, id));
+      await tx.insert(userStatusHistory).values({
+        userId: id,
+        fromStatus: t.status,
+        toStatus: "deleted",
+        reason: input.reason,
+        changedBy: actor.id,
+      });
+      await tx
+        .update(authSessions)
+        .set({ revokedAt: now, revokeReason: "account_deleted" })
+        .where(and(eq(authSessions.userId, id), isNull(authSessions.revokedAt)));
+    });
+    await this.mail.send(
+      person.personalEmail,
+      "Your CyneForm Group account has been removed",
+      `Dear ${person.fullName},\n\nYour CyneForm Group account has been removed and you no longer have access.`,
+    );
+    await this.audit.record({
+      actor,
+      action: "users.deleted",
+      targetType: "user",
+      targetId: id,
+      details: { reason: input.reason },
+      client,
+    });
   }
 
   async history(id: string): Promise<StatusHistoryItem[]> {

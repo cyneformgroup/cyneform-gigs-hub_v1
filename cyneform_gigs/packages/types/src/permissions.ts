@@ -1,4 +1,5 @@
 export type {
+  DeactivationType,
   PermissionCode,
   RoleCode,
   UserStatus,

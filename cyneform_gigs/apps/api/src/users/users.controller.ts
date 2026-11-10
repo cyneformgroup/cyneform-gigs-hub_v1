@@ -2,6 +2,7 @@ import { PERMISSIONS } from "@cyneform/validators";
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Inject,
@@ -19,6 +20,7 @@ import { clientInfo } from "../common/client-info";
 import type {
   ChangeStatusDto,
   CreateUserDto,
+  DeleteUserDto,
   PageQueryDto,
   SetOverridesDto,
   UpdateUserDto,
@@ -100,6 +102,18 @@ export class UsersController {
   @Get("users/:id/status-history")
   history(@Param("id", ParseUUIDPipe) id: string) {
     return this.users.history(id);
+  }
+
+  @RequirePermissions("users.delete")
+  @Delete("users/:id")
+  @HttpCode(204)
+  remove(
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body() dto: DeleteUserDto,
+    @CurrentUser() actor: AuthUser,
+    @Req() req: Request,
+  ) {
+    return this.users.remove(id, dto, actor, clientInfo(req));
   }
 
   @RequirePermissions("permissions.view")

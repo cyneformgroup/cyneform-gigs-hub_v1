@@ -20,6 +20,7 @@ const EnvSchema = z.object({
   SEED_BDP_NAME: z.string().default("Jane Wanjiku"),
   SEED_BDP_BUSINESS_EMAIL: z.email().default("jane@cyneform.test"),
   SEED_BDP_PERSONAL_EMAIL: z.email().default("jane.personal@cyneform.test"),
+  SUPPORT_WHATSAPP: z.string().default("+254 710 557 446"),
 });
 
 const parsed = EnvSchema.safeParse(process.env);

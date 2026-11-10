@@ -3,11 +3,12 @@ import { ROLE_CODES } from "./permissions";
 
 export const PasswordSchema = z
   .string()
-  .min(10, "At least 10 characters")
+  .min(8, "At least 8 characters")
   .max(128)
   .regex(/[a-z]/, "Include a lowercase letter")
   .regex(/[A-Z]/, "Include an uppercase letter")
-  .regex(/\d/, "Include a number");
+  .regex(/\d/, "Include a number")
+  .regex(/[^A-Za-z0-9]/, "Include a special character");
 
 export const LoginSchema = z.object({
   email: z.email(),

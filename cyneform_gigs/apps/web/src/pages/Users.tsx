@@ -63,6 +63,12 @@ function CreateUserForm({ onDone }: { onDone: () => void }) {
         />
         <Field label="Phone" name="phone" placeholder="+254712345678" error={errors.phone} />
         <Field label="Location" name="location" error={errors.location} />
+        <Field
+          label="ID number"
+          name="idNumber"
+          error={errors.idNumber}
+          hint="National ID, stored encrypted"
+        />
         <div className="flex gap-2 sm:col-span-2">
           <Button type="submit" disabled={create.isPending}>
             {create.isPending ? "Creating…" : "Create and send invite"}

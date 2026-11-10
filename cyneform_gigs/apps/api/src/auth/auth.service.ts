@@ -41,6 +41,31 @@ export interface IssuedSession {
   user: SessionUser;
 }
 
+const statusRefusal = (status: User["status"]) => {
+  switch (status) {
+    case "frozen":
+      return {
+        code: "ACCOUNT_FROZEN",
+        message: `Your account is under management review. Contact WhatsApp ${env.SUPPORT_WHATSAPP}.`,
+      };
+    case "on_leave":
+      return {
+        code: "ACCOUNT_ON_LEAVE",
+        message: "Your account is temporarily frozen as you are on official leave.",
+      };
+    case "deactivated":
+      return {
+        code: "ACCOUNT_DEACTIVATED",
+        message: "Your account has been deactivated. Please contact management.",
+      };
+    default:
+      return {
+        code: "ACCOUNT_INACTIVE",
+        message: "This account is not active. Contact your administrator.",
+      };
+  }
+};
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -82,12 +107,9 @@ export class AuthService {
       throw invalidCredentials();
     }
     if (user.status !== "active") {
-      await this.attempt(user.id, emailBidx, "frozen", client);
-      throw new AppError(
-        "ACCOUNT_INACTIVE",
-        "This account is not active. Contact your administrator.",
-        403,
-      );
+      await this.attempt(user.id, emailBidx, user.status, client);
+      const { code, message } = statusRefusal(user.status);
+      throw new AppError(code, message, 403);
     }
     return { challengeId: await this.issueOtp(user, client) };
   }
@@ -403,11 +425,6 @@ export class AuthService {
 
   // ---- Helpers -------------------------------------------------------------------------
   private async issueOtp(user: User, client: ClientInfo): Promise<string> {
-    const [profile] = await this.db
-      .select({ email: userProfiles.personalEmail, legacyEmail: userProfiles.personalEmailCt })
-      .from(userProfiles)
-      .where(eq(userProfiles.userId, user.id))
-      .limit(1);
     await this.db
       .update(otpChallenges)
       .set({ usedAt: new Date() })
@@ -423,7 +440,7 @@ export class AuthService {
       ipAddress: client.ip,
     });
     await this.mail.send(
-      storedEmail(profile?.email ?? null, profile?.legacyEmail ?? null),
+      storedEmail(user.businessEmail, user.businessEmailCt),
       "Your CyneForm sign-in code",
       `Your code is ${code}. It expires in ${AUTH.otpMinutes} minutes. If this was not you, tell your administrator.`,
     );

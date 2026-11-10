@@ -2,6 +2,7 @@ import type {
   ChangeStatusSchema,
   CreateLeaveSchema,
   DecideLeaveSchema,
+  DeleteUserSchema,
   LeavePageSchema,
   LeaveQuerySchema,
   LeaveRequestSchema,
@@ -20,3 +21,4 @@ export type DecideLeaveInput = z.infer<typeof DecideLeaveSchema>;
 export type LeaveQuery = z.infer<typeof LeaveQuerySchema>;
 export type LeaveRequest = z.infer<typeof LeaveRequestSchema>;
 export type LeavePage = z.infer<typeof LeavePageSchema>;
+export type DeleteUserInput = z.infer<typeof DeleteUserSchema>;

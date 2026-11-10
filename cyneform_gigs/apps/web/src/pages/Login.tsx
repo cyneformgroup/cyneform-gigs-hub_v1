@@ -52,7 +52,7 @@ export function Login() {
     return (
       <AuthShell
         title="Enter your code"
-        subtitle="We emailed a 6-digit code to your personal email."
+        subtitle="We emailed a 6-digit code to your business email."
       >
         <form onSubmit={onCode} className="space-y-4" noValidate>
           {error && <Alert tone="error">{error}</Alert>}
