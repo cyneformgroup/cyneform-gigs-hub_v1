@@ -1,10 +1,5 @@
-// Role codes defined per the validators/permissions catalogue
-export const ROLE_CODES = ["super_admin", "admin", "bdp"] as const;
-export type RoleCode = (typeof ROLE_CODES)[number];
-
-// User statuses from validators/permissions
-export const USER_STATUSES = ["active", "frozen", "on_leave", "deactivated", "deleted"] as const;
-export type UserStatus = (typeof USER_STATUSES)[number];
+import type { DeactivationType, RoleCode } from "@cyneform/types";
+import { USER_STATUSES } from "@cyneform/validators";
 
 import {
   type AnyMySqlColumn,
@@ -69,6 +64,10 @@ export const users = mysqlTable(
     statusChangedAt: ts("status_changed_at"),
     statusChangedBy: uuidCol("status_changed_by").references((): AnyMySqlColumn => users.id),
     freezeStartedAt: ts("freeze_started_at"),
+    deactivationType: varchar("deactivation_type", {
+      length: 12,
+    }).$type<DeactivationType>(),
+    deactivatedAt: ts("deactivated_at"),
     failedLoginCount: int("failed_login_count").notNull().default(0),
     lockedUntil: ts("locked_until"),
     lastLoginAt: ts("last_login_at"),

@@ -1,4 +1,5 @@
 import {
+  DeleteUserSchema,
   ForgotPasswordSchema,
   LoginSchema,
   SetPasswordSchema,
@@ -10,3 +11,4 @@ export class LoginDto extends createZodDto(LoginSchema) {}
 export class VerifyOtpDto extends createZodDto(VerifyOtpSchema) {}
 export class SetPasswordDto extends createZodDto(SetPasswordSchema) {}
 export class ForgotPasswordDto extends createZodDto(ForgotPasswordSchema) {}
+export class DeleteUserDto extends createZodDto(DeleteUserSchema) {}

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { PageQuerySchema, pageOf } from "./common";
+import { DEACTIVATION_TYPES } from "./constants";
 import { KenyanPhoneSchema } from "./users";
 
 export const MANAGEABLE_STATUSES = ["active", "frozen", "on_leave", "deactivated"] as const;
@@ -22,8 +23,19 @@ export const UpdateUserSchema = z
   })
   .refine(atLeastOne, "Change at least one field");
 
-export const ChangeStatusSchema = z.object({
-  status: z.enum(MANAGEABLE_STATUSES),
+export const ChangeStatusSchema = z
+  .object({
+    status: z.enum(MANAGEABLE_STATUSES),
+    reason: z.string().trim().min(3, "Give a short reason").max(500),
+    deactivationType: z.enum(DEACTIVATION_TYPES).optional(),
+  })
+  .refine((v) => v.status !== "deactivated" || !!v.deactivationType, {
+    path: ["deactivationType"],
+    message: "Choose temporary or permanent",
+  });
+
+export const DeleteUserSchema = z.object({
+  confirm: z.literal("DELETE", { error: "Type DELETE to confirm" }),
   reason: z.string().trim().min(3, "Give a short reason").max(500),
 });
 

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { pageOf } from "./common";
+import { DEACTIVATION_TYPES } from "./constants";
 import { PERMISSIONS, ROLE_CODES, USER_STATUSES } from "./permissions";
 
 export const KenyanPhoneSchema = z
@@ -10,8 +11,9 @@ export const CreateUserSchema = z.object({
   fullName: z.string().trim().min(2).max(255),
   businessEmail: z.email(),
   personalEmail: z.email(),
-  phone: KenyanPhoneSchema.optional(),
-  location: z.string().trim().max(255).optional(),
+  phone: KenyanPhoneSchema,
+  location: z.string().trim().min(2).max(255),
+  idNumber: z.string().regex(/^\d{7,8}$/, "Enter a valid ID number (7 or 8 digits)"),
   role: z.enum(["admin", "bdp"]).default("bdp"),
 });
 
@@ -22,6 +24,7 @@ export const UserSummarySchema = z.object({
   businessEmail: z.string(),
   role: z.enum(ROLE_CODES),
   status: z.enum(USER_STATUSES),
+  deactivationType: z.enum(DEACTIVATION_TYPES).nullable(),
   passwordSet: z.boolean(),
   location: z.string().nullable(),
   lastLoginAt: z.string().nullable(),
@@ -44,4 +47,5 @@ export const UserDetailSchema = UserSummarySchema.extend({
   phone: z.string().nullable(),
   effectivePermissions: z.array(z.string()),
   overrides: z.array(PermissionOverrideSchema),
+  deactivationType: z.enum(DEACTIVATION_TYPES).nullable(),
 });

@@ -59,7 +59,7 @@ export function SetPassword() {
   return (
     <AuthShell
       title="Choose your password"
-      subtitle="At least 10 characters, with upper case, lower case and a number."
+      subtitle="At least 8 characters, with upper case, lower case, a number and a special character."
     >
       <form onSubmit={onSubmit} className="space-y-4" noValidate>
         {!token && (

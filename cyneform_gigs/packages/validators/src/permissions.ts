@@ -37,6 +37,12 @@ export const PERMISSIONS = [
     superAdminOnly: true,
   },
   {
+    code: "users.delete",
+    module: "users",
+    description: "Delete user accounts",
+    superAdminOnly: true,
+  },
+  {
     code: "permissions.view",
     module: "permissions",
     description: "View roles and permissions",
