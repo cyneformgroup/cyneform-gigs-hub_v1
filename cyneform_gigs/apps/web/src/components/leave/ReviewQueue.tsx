@@ -93,12 +93,15 @@ function ReviewRow({ request }: { request: LeaveRequest }) {
 }
 
 export function ReviewQueue() {
-  const [status, setStatus] = useState<(typeof LEAVE_STATUSES)[number]>("pending");
+  const [status, setStatus] = useState<"all" | (typeof LEAVE_STATUSES)[number]>("pending");
   const [page, setPage] = useState(1);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["leave", "all", status, page],
-    queryFn: () => api<LeavePage>(`/leave?status=${status}&page=${page}&pageSize=20`),
+    queryFn: () =>
+      api<LeavePage>(
+        `/leave?${status === "all" ? "" : `status=${status}&`}page=${page}&pageSize=20`,
+      ),
     placeholderData: keepPreviousData,
   });
   const pages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
@@ -116,6 +119,7 @@ export function ReviewQueue() {
           }}
           className="rounded-md px-2 py-1.5 text-sm capitalize ring-1 ring-slate-300"
         >
+          <option value="all">All</option>
           {LEAVE_STATUSES.map((s) => (
             <option key={s} value={s}>
               {s}
@@ -135,7 +139,9 @@ export function ReviewQueue() {
             <ReviewRow key={r.id} request={r} />
           ))}
           {data?.items.length === 0 && (
-            <li className="p-6 text-center text-sm text-slate-500">Nothing {status} right now.</li>
+            <li className="p-6 text-center text-sm text-slate-500">
+              Nothing {status === "all" ? "to review" : status} right now.
+            </li>
           )}
         </ul>
         <div className="flex items-center justify-between border-t border-slate-200 p-4 text-sm text-slate-600">
