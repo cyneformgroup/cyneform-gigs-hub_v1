@@ -29,6 +29,13 @@
       "when": 1794307443171,
       "tag": "0003_phase2b_alignment",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1794477452934,
+      "tag": "0004_phase3_platform",
+      "breakpoints": true
     }
   ]
 }

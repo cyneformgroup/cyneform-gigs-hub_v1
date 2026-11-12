@@ -72,6 +72,18 @@ export const PERMISSIONS = [
     description: "Approve or reject leave",
     superAdminOnly: false,
   },
+  {
+    code: "settings.view",
+    module: "settings",
+    description: "View system settings",
+    superAdminOnly: false,
+  },
+  {
+    code: "settings.manage",
+    module: "settings",
+    description: "Change system settings",
+    superAdminOnly: false,
+  },
 ] as const;
 export type PermissionCode = (typeof PERMISSIONS)[number]["code"];
 
@@ -87,6 +99,8 @@ export const ROLE_DEFAULTS: Record<RoleCode, readonly PermissionCode[]> = {
     "leave.request",
     "leave.view_all",
     "leave.decide",
+    "settings.view",
+    "settings.manage",
   ],
   bdp: ["leave.request"],
 };

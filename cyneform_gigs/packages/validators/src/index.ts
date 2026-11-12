@@ -2,6 +2,8 @@ export * from "./auth";
 export * from "./common";
 export * from "./constants";
 export * from "./health";
+export * from "./notifications";
 export * from "./people";
 export * from "./permissions";
+export * from "./settings";
 export * from "./users";
