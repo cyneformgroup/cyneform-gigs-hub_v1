@@ -1,16 +1,44 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { createQueue, type MailJob, QUEUES } from "@cyneform/queue";
+import { Injectable, Logger, type OnModuleDestroy } from "@nestjs/common";
 import { env } from "../config/env";
+import { type Rendered, type TemplateData, type TemplateName, templates } from "./templates";
 
-/** Development prints each email to the API console. A real provider replaces the body of send() later. */
 @Injectable()
-export class MailService {
-  private readonly log = new Logger("Mail");
+export class MailService implements OnModuleDestroy {
+  private readonly log = new Logger(MailService.name);
+  private readonly queue = createQueue<MailJob>(QUEUES.mail, env.REDIS_URL);
 
-  async send(to: string, subject: string, body: string): Promise<void> {
-    const code = body.match(/Your code is (\d{6})/)?.[1];
-    if (env.NODE_ENV === "development" && subject === "Your CyneForm sign-in code" && code) {
-      console.log(`[DEV OTP] ${code} for ${to}`);
+  async send(
+    to: string,
+    subject: string,
+    text: string,
+    extra: Pick<MailJob, "html" | "template"> = {},
+  ) {
+    try {
+      await this.queue.add(
+        "send",
+        { to, subject, text, ...extra },
+        {
+          attempts: 5,
+          backoff: { type: "exponential", delay: 5_000 },
+          removeOnComplete: 1_000,
+          removeOnFail: 5_000,
+        },
+      );
+    } catch (err) {
+      this.log.error(`Could not queue email to ${to}: ${(err as Error).message}`);
+      // Development only: if Redis is down, still show the email (OTP codes etc.).
+      if (process.env.NODE_ENV !== "production")
+        this.log.warn(`[DEV FALLBACK]\nTo: ${to}\nSubject: ${subject}\n\n${text}`);
     }
-    this.log.log(`\n--- EMAIL to ${to} ---\nSubject: ${subject}\n${body}\n--- END EMAIL ---`);
+  }
+
+  sendTemplate<N extends TemplateName>(to: string, name: N, data: TemplateData<N>) {
+    const m = (templates[name] as (d: TemplateData<N>) => Rendered)(data);
+    return this.send(to, m.subject, m.text, { html: m.html, template: name });
+  }
+
+  onModuleDestroy() {
+    return this.queue.close();
   }
 }

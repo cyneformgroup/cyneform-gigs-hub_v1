@@ -6,6 +6,7 @@ import { AuditService } from "../audit/audit.service";
 import type { ClientInfo } from "../common/client-info";
 import { badRequest, conflict, forbidden, notFound } from "../common/errors";
 import { DB, type Db } from "../database/database.module";
+import { NotificationsService } from "../notifications/notifications.service";
 import { UsersService } from "../users/users.service";
 
 const todayEAT = () => new Date().toLocaleDateString("en-CA", { timeZone: "Africa/Nairobi" }); // YYYY-MM-DD
@@ -18,6 +19,8 @@ export class LeaveService {
     @Inject(DB) private readonly db: Db,
     @Inject(UsersService) private readonly users: UsersService,
     @Inject(AuditService) private readonly audit: AuditService,
+    @Inject(NotificationsService)
+    private readonly notifications: NotificationsService,
   ) {}
 
   private async hydrate(rows: (typeof leaveRequests.$inferSelect)[]): Promise<LeaveRequest[]> {
@@ -78,6 +81,15 @@ export class LeaveService {
       details: { ...input },
       client,
     });
+    await this.notifications.notifyRoles(
+      ["super_admin", "admin"],
+      {
+        type: "leave.requested",
+        title: "New leave request",
+        link: "/leave",
+      },
+      user.id,
+    );
     return this.one(id);
   }
 
@@ -139,6 +151,12 @@ export class LeaveService {
       targetId: id,
       details: { userId: r.userId, note: input.note },
       client,
+    });
+    await this.notifications.notify(r.userId, {
+      type: "leave.decided",
+      title: input.decision === "approved" ? "Your leave was approved" : "Your leave was rejected",
+      body: input.note ?? undefined,
+      link: "/leave",
     });
     return this.one(id);
   }
