@@ -242,6 +242,6 @@ async function seed() {
 }
 
 void seed().catch((error: unknown) => {
-  console.error("Seed failed:", error instanceof Error ? error.message : error);
+  console.error("Seed failed:", error);
   process.exitCode = 1;
 });
