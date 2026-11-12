@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate } from "react-router";
 import { useAuth } from "../lib/auth";
+import { NotificationBell } from "./NotificationBell";
 import { Button } from "./ui";
 
 const nav = [
@@ -12,6 +13,7 @@ const nav = [
     any: ["leave.request", "leave.view_all"],
   },
   { to: "/profile", label: "My profile", end: false, any: [] as string[] },
+  { to: "/settings", label: "Settings", end: false, any: ["settings.manage"] },
 ];
 
 export function Layout() {
@@ -44,6 +46,7 @@ export function Layout() {
             ))}
         </nav>
       </aside>
+      <NotificationBell />
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex items-center justify-end gap-3 border-b border-slate-200 bg-white px-6 py-3">
           <div className="text-right text-sm">
