@@ -37,7 +37,7 @@ import { AuthService } from "../auth/auth.service";
 import type { ClientInfo } from "../common/client-info";
 import { blindIndex, currentKeyId, decrypt, encrypt, storedEmail } from "../common/crypto";
 import { badRequest, conflict, forbidden, notFound } from "../common/errors";
-import { AUTH } from "../config/env";
+import { AUTH, env } from "../config/env";
 import { DB, type Db } from "../database/database.module";
 import { MailService } from "../mail/mail.service";
 
@@ -479,7 +479,15 @@ export class UsersService {
       },
       client,
     });
-    return this.detail(id, null);
+    const updated = await this.detail(id, null);
+    await this.mail.sendTemplate(updated.personalEmail, "status_changed", {
+      name: updated.fullName,
+      status: input.status,
+      reason: input.reason,
+      deactivationType: input.deactivationType,
+      whatsapp: env.SUPPORT_WHATSAPP,
+    });
+    return updated;
   }
 
   /** Super Admin only. Soft delete: locked out and hidden now; personal data is anonymised after 30 days (daily job, Phase 12). */
@@ -519,11 +527,9 @@ export class UsersService {
         .set({ revokedAt: now, revokeReason: "account_deleted" })
         .where(and(eq(authSessions.userId, id), isNull(authSessions.revokedAt)));
     });
-    await this.mail.send(
-      person.personalEmail,
-      "Your CyneForm Group account has been removed",
-      `Dear ${person.fullName},\n\nYour CyneForm Group account has been removed and you no longer have access.`,
-    );
+    await this.mail.sendTemplate(person.personalEmail, "account_removed", {
+      name: person.fullName,
+    });
     await this.audit.record({
       actor,
       action: "users.deleted",

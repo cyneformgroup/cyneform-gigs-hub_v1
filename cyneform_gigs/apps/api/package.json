@@ -19,6 +19,7 @@
     "@cyneform/db": "workspace:*",
     "@cyneform/types": "workspace:*",
     "@cyneform/validators": "workspace:*",
+    "@cyneform/queue": "workspace:*",
     "@nestjs/common": "^12.0.1",
     "@nestjs/core": "^12.0.1",
     "@nestjs/platform-express": "^12.0.1",

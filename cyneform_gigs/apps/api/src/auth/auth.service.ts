@@ -439,11 +439,10 @@ export class AuthService {
       expiresAt: new Date(Date.now() + minutes(AUTH.otpMinutes)),
       ipAddress: client.ip,
     });
-    await this.mail.send(
-      storedEmail(user.businessEmail, user.businessEmailCt),
-      "Your CyneForm sign-in code",
-      `Your code is ${code}. It expires in ${AUTH.otpMinutes} minutes. If this was not you, tell your administrator.`,
-    );
+    await this.mail.sendTemplate(storedEmail(user.businessEmail, user.businessEmailCt), "otp", {
+      code,
+      minutes: AUTH.otpMinutes,
+    });
     return id;
   }
 

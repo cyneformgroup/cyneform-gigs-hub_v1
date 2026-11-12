@@ -10,6 +10,8 @@ import { DatabaseModule } from "./database/database.module";
 import { HealthController } from "./health/health.controller";
 import { LeaveModule } from "./leave/leave.module";
 import { MailModule } from "./mail/mail.module";
+import { NotificationsModule } from "./notifications/notifications.module";
+import { SettingsModule } from "./settings/settings.module";
 import { UsersModule } from "./users/users.module";
 
 @Module({
@@ -22,6 +24,8 @@ import { UsersModule } from "./users/users.module";
     AuthModule,
     UsersModule,
     LeaveModule,
+    NotificationsModule,
+    SettingsModule,
   ],
   controllers: [HealthController],
   providers: [
