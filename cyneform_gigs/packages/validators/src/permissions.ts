@@ -84,6 +84,18 @@ export const PERMISSIONS = [
     description: "Change system settings",
     superAdminOnly: false,
   },
+  {
+    code: "sources.view",
+    module: "sources",
+    description: "View lead sources and harvest runs",
+    superAdminOnly: false,
+  },
+  {
+    code: "sources.manage",
+    module: "sources",
+    description: "Add, edit, test and run lead sources",
+    superAdminOnly: false,
+  },
 ] as const;
 export type PermissionCode = (typeof PERMISSIONS)[number]["code"];
 
@@ -101,6 +113,8 @@ export const ROLE_DEFAULTS: Record<RoleCode, readonly PermissionCode[]> = {
     "leave.decide",
     "settings.view",
     "settings.manage",
+    "sources.view",
+    "sources.manage",
   ],
   bdp: ["leave.request"],
 };

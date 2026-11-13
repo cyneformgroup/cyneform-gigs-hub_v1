@@ -1,6 +1,6 @@
-import { type ConnectionOptions, Queue } from "bullmq";
+import { type ConnectionOptions, Queue, QueueEvents } from "bullmq";
 
-export const QUEUES = { mail: "mail", cron: "cron" } as const;
+export const QUEUES = { mail: "mail", cron: "cron", scrape: "scrape" } as const;
 
 /** One email, already rendered by the API. The worker only delivers it. */
 export type MailJob = {
@@ -30,4 +30,18 @@ export function redisOptions(url: string, role: "producer" | "worker"): Connecti
 
 export function createQueue<T>(name: string, url: string) {
   return new Queue<T>(name, { connection: redisOptions(url, "producer") });
+}
+
+export type ScrapeJob =
+  | {
+      kind: "run";
+      sourceId: string;
+      trigger: "schedule" | "manual";
+      by?: string;
+    }
+  | { kind: "preview"; input: unknown }; // validated again by the worker
+
+/** Lets the API wait for a preview job's result without doing the scraping itself. */
+export function createQueueEvents(name: string, url: string) {
+  return new QueueEvents(name, { connection: redisOptions(url, "worker") });
 }
