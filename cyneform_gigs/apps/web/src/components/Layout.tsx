@@ -14,6 +14,7 @@ const nav = [
   },
   { to: "/profile", label: "My profile", end: false, any: [] as string[] },
   { to: "/settings", label: "Settings", end: false, any: ["settings.manage"] },
+  { to: "/sources", label: "Sources", any: ["sources.view"] },
 ];
 
 export function Layout() {

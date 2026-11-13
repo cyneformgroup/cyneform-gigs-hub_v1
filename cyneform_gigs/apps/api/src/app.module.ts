@@ -12,6 +12,7 @@ import { LeaveModule } from "./leave/leave.module";
 import { MailModule } from "./mail/mail.module";
 import { NotificationsModule } from "./notifications/notifications.module";
 import { SettingsModule } from "./settings/settings.module";
+import { SourcesModule } from "./sources/sources.module";
 import { UsersModule } from "./users/users.module";
 
 @Module({
@@ -26,6 +27,7 @@ import { UsersModule } from "./users/users.module";
     LeaveModule,
     NotificationsModule,
     SettingsModule,
+    SourcesModule,
   ],
   controllers: [HealthController],
   providers: [

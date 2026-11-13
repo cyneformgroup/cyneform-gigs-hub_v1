@@ -11,6 +11,9 @@
   "dependencies": {
     "@cyneform/db": "workspace:*",
     "@cyneform/queue": "workspace:*",
+    "@cyneform/scraper": "workspace:*",
+    "@cyneform/types": "workspace:*",
+    "@cyneform/validators": "workspace:*",
     "bullmq": "^5.0.0",
     "nodemailer": "^6.9.0",
     "zod": "^4.6.7"

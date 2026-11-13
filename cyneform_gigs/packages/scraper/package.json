@@ -1,0 +1,23 @@
+{
+  "name": "@cyneform/scraper",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@cyneform/validators": "workspace:*",
+    "cheerio": "^1.0.0",
+    "crawlee": "^3.13.0"
+  }
+}

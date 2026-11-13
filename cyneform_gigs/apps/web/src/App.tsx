@@ -8,6 +8,7 @@ import { Login } from "./pages/Login";
 import { Profile } from "./pages/Profile";
 import { SetPassword } from "./pages/SetPassword";
 import { Settings } from "./pages/Settings";
+import { Sources } from "./pages/Sources";
 import { UserDetailPage } from "./pages/UserDetail";
 import { Users } from "./pages/Users";
 
@@ -28,6 +29,7 @@ export default function App() {
             <Route path="users/:id" element={<UserDetailPage />} />
           </Route>
           <Route path="settings" element={<Settings />} />
+          <Route path="sources" element={<Sources />} />
         </Route>
       </Route>
 

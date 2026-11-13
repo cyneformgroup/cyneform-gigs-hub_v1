@@ -15,5 +15,6 @@ export const env = z
     SMTP_USER: z.string().optional().transform(blank),
     SMTP_PASS: z.string().optional().transform(blank),
     MAIL_FROM: z.string().default("CyneForm Group <no-reply@localhost>"),
+    BOT_USER_AGENT: z.string().default("CyneFormBot/1.0"),
   })
   .parse(process.env);
