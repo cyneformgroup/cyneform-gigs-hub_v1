@@ -1,5 +1,6 @@
 export {
   and,
+  asc,
   count,
   desc,
   eq,

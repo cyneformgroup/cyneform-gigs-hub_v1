@@ -1,6 +1,6 @@
 import { type ConnectionOptions, Queue, QueueEvents } from "bullmq";
 
-export const QUEUES = { mail: "mail", cron: "cron", scrape: "scrape" } as const;
+export const QUEUES = { mail: "mail", cron: "cron", scrape: "scrape", events: "events" } as const;
 
 /** One email, already rendered by the API. The worker only delivers it. */
 export type MailJob = {
@@ -45,3 +45,8 @@ export type ScrapeJob =
 export function createQueueEvents(name: string, url: string) {
   return new QueueEvents(name, { connection: redisOptions(url, "worker") });
 }
+
+/** Domain events: the worker (or API) announces, the API reacts. */
+export type EventJob = { type: "lead.published"; leadIds: string[] };
+
+export { type Job, Worker } from "bullmq";

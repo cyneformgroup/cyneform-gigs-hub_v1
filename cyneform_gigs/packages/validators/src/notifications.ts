@@ -5,6 +5,7 @@ export const NOTIFICATION_TYPES = [
   "leave.requested",
   "leave.decided",
   "system",
+  "gigs.published",
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 

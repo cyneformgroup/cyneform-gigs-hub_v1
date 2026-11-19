@@ -56,6 +56,15 @@ export const templates = {
       `Dear ${d.name},`,
       "Your account has been removed and you no longer have access.",
     ]),
+
+  new_gigs: (d: { count: number; titles: string[]; url: string }) =>
+    build(`${d.count} new gig${d.count === 1 ? "" : "s"} available on CyneForm Group`, [
+      "Hello,",
+      `${d.count} new gig${d.count === 1 ? " was" : "s were"} just published:`,
+      ...d.titles.map((t) => `• ${t}`),
+      ...(d.count > d.titles.length ? [`…and ${d.count - d.titles.length} more.`] : []),
+      `Sign in to view them: ${d.url}`,
+    ]),
 };
 
 export type TemplateName = keyof typeof templates;

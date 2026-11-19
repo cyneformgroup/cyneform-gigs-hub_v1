@@ -3,6 +3,7 @@ import { Layout } from "./components/Layout";
 import { RequireAuth } from "./components/RequireAuth";
 import { Dashboard } from "./pages/Dashboard";
 import { ForgotPassword } from "./pages/ForgotPassword";
+import { Gigs } from "./pages/Gigs";
 import { Leave } from "./pages/Leave";
 import { Login } from "./pages/Login";
 import { Profile } from "./pages/Profile";
@@ -30,6 +31,7 @@ export default function App() {
           </Route>
           <Route path="settings" element={<Settings />} />
           <Route path="sources" element={<Sources />} />
+          <Route path="gigs" element={<Gigs />} />
         </Route>
       </Route>
 

@@ -96,6 +96,18 @@ export const PERMISSIONS = [
     description: "Add, edit, test and run lead sources",
     superAdminOnly: false,
   },
+  {
+    code: "gigs.view",
+    module: "gigs",
+    description: "View published gigs",
+    superAdminOnly: false,
+  },
+  {
+    code: "gigs.review",
+    module: "gigs",
+    description: "Review, approve and reject discovered gigs",
+    superAdminOnly: false,
+  },
 ] as const;
 export type PermissionCode = (typeof PERMISSIONS)[number]["code"];
 
@@ -115,6 +127,8 @@ export const ROLE_DEFAULTS: Record<RoleCode, readonly PermissionCode[]> = {
     "settings.manage",
     "sources.view",
     "sources.manage",
+    "gigs.view",
+    "gigs.review",
   ],
-  bdp: ["leave.request"],
+  bdp: ["leave.request", "gigs.view"],
 };
