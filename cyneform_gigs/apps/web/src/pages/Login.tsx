@@ -54,13 +54,14 @@ export function Login() {
         title="Enter your code"
         subtitle="We emailed a 6-digit code to your business email."
       >
-        <form onSubmit={onCode} className="space-y-4" noValidate>
+        <form key="otp" onSubmit={onCode} className="space-y-4" noValidate>
           {error && <Alert tone="error">{error}</Alert>}
           <Field
             label="Code"
             name="code"
             inputMode="numeric"
-            autoComplete="one-time-code"
+            autoComplete="off"
+            placeholder="6-digit code"
             maxLength={6}
             error={errors.code}
             autoFocus
@@ -82,7 +83,7 @@ export function Login() {
 
   return (
     <AuthShell title="Sign in" subtitle="Use your CyneForm business email.">
-      <form onSubmit={onCredentials} className="space-y-4" noValidate>
+      <form key="credentials" onSubmit={onCredentials} className="space-y-4" noValidate>
         {error && <Alert tone="error">{error}</Alert>}
         <Field
           label="Business email"
