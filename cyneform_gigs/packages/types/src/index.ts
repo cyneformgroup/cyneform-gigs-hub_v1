@@ -1,5 +1,6 @@
 export type * from "./auth";
 export type * from "./common";
+export type * from "./gigs";
 export type * from "./health";
 export type * from "./notifications";
 export type * from "./people";

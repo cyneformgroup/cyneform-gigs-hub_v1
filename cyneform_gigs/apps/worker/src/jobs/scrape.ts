@@ -17,6 +17,7 @@ import type { PreviewResult } from "@cyneform/types";
 import { SourceInputSchema } from "@cyneform/validators";
 import type { Job } from "bullmq";
 import { env } from "../env";
+import { emit } from "../events";
 import { notifyAdmins } from "../notify";
 
 async function tuning(maxPages?: number | null): Promise<Tuning> {
@@ -112,6 +113,7 @@ async function runSourceJob(sourceId: string, trigger: "schedule" | "manual", by
 
     let added = 0;
     let duplicates = 0;
+    const publishedIds: string[] = [];
     for (const { gig, fingerprint, ownUrl } of r.gigs) {
       if (ownUrl) {
         const [hit] = await db
@@ -124,10 +126,12 @@ async function runSourceJob(sourceId: string, trigger: "schedule" | "manual", by
           continue;
         }
       }
+      const id = newId();
       const [res] = await db
         .insert(leads)
         .ignore()
         .values({
+          id,
           sourceId,
           runId,
           fingerprint,
@@ -146,8 +150,17 @@ async function runSourceJob(sourceId: string, trigger: "schedule" | "manual", by
           status: src.autoPublish ? "new" : "pending_review",
           publishedAt: src.autoPublish ? new Date() : null,
         });
-      if (res.affectedRows === 1) added++;
-      else duplicates++; // unique fingerprint = same gig already stored
+      if (res.affectedRows === 1) {
+        added++;
+        if (src.autoPublish) publishedIds.push(id);
+      } else {
+        duplicates++; // unique fingerprint = same gig already stored
+      }
+    }
+    if (publishedIds.length) {
+      await emit({ type: "lead.published", leadIds: publishedIds }).catch((e) =>
+        console.error("[scrape] could not emit lead.published:", (e as Error).message),
+      );
     }
 
     const alertPct = await getNumber("harvest.error_alert_pct");

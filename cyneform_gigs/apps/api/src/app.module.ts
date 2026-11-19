@@ -7,6 +7,7 @@ import { AuditModule } from "./audit/audit.module";
 import { AuthModule } from "./auth/auth.module";
 import { ErrorFilter } from "./common/errors";
 import { DatabaseModule } from "./database/database.module";
+import { GigsModule } from "./gigs/gigs.module";
 import { HealthController } from "./health/health.controller";
 import { LeaveModule } from "./leave/leave.module";
 import { MailModule } from "./mail/mail.module";
@@ -28,6 +29,7 @@ import { UsersModule } from "./users/users.module";
     NotificationsModule,
     SettingsModule,
     SourcesModule,
+    GigsModule,
   ],
   controllers: [HealthController],
   providers: [
