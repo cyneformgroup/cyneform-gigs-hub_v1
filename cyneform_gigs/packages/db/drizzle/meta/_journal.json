@@ -43,6 +43,13 @@
       "when": 1794566846521,
       "tag": "0005_phase4_sources",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1795191236264,
+      "tag": "0006_phase5_claims",
+      "breakpoints": true
     }
   ]
 }

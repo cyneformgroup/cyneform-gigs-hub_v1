@@ -1,4 +1,5 @@
 import type {
+  ActiveClaimSchema,
   GigItemSchema,
   GigPageSchema,
   GigQuerySchema,
@@ -12,3 +13,4 @@ export type GigPage = z.infer<typeof GigPageSchema>;
 export type GigQuery = z.infer<typeof GigQuerySchema>;
 export type ReviewGigsInput = z.infer<typeof ReviewGigsSchema>;
 export type ReviewResult = z.infer<typeof ReviewResultSchema>;
+export type ActiveClaim = z.infer<typeof ActiveClaimSchema>;

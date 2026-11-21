@@ -115,6 +115,16 @@ export const SETTINGS = [
     default: 30,
   },
   {
+    key: "leads.max_active_claims",
+    group: "Lead pool",
+    label: "Active claims per BDP",
+    hint: "How many unsent claims one BDP can hold at once",
+    type: "number",
+    min: 1,
+    max: 10,
+    default: 1,
+  },
+  {
     key: "leads.archive_after_days",
     group: "Lead pool",
     label: "Archive new leads after",

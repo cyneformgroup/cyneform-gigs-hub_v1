@@ -39,6 +39,7 @@ import { blindIndex, currentKeyId, decrypt, encrypt, storedEmail } from "../comm
 import { badRequest, conflict, forbidden, notFound } from "../common/errors";
 import { AUTH, env } from "../config/env";
 import { DB, type Db } from "../database/database.module";
+import { ClaimsService } from "../gigs/claims.service";
 import { MailService } from "../mail/mail.service";
 
 type Actor = Pick<AuthUser, "id" | "role" | "permissions"> | null; // null = system (seed)
@@ -57,6 +58,8 @@ export class UsersService {
     private readonly audit: AuditService,
     @Inject(MailService)
     private readonly mail: MailService,
+    @Inject(ClaimsService)
+    private readonly claims: ClaimsService,
   ) {}
 
   private readonly summaryColumns = {
@@ -479,6 +482,8 @@ export class UsersService {
       },
       client,
     });
+    if (input.status !== "active")
+      await this.claims.releaseAllFor(id, `status_${input.status}`, actor, client);
     const updated = await this.detail(id, null);
     await this.mail.sendTemplate(updated.personalEmail, "status_changed", {
       name: updated.fullName,
@@ -527,6 +532,7 @@ export class UsersService {
         .set({ revokedAt: now, revokeReason: "account_deleted" })
         .where(and(eq(authSessions.userId, id), isNull(authSessions.revokedAt)));
     });
+    await this.claims.releaseAllFor(id, "account_deleted", actor, client);
     await this.mail.sendTemplate(person.personalEmail, "account_removed", {
       name: person.fullName,
     });

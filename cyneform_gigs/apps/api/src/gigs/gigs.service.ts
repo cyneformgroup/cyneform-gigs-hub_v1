@@ -1,4 +1,17 @@
-import { and, asc, count, desc, eq, gt, inArray, leadSources, leads, like, or } from "@cyneform/db";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gt,
+  inArray,
+  leadClaims,
+  leadSources,
+  leads,
+  like,
+  or,
+} from "@cyneform/db";
 import type {
   GigItem,
   GigPage,
@@ -16,7 +29,12 @@ import { DB, type Db } from "../database/database.module";
 import { GigNotifier } from "./gig-notifier.service";
 
 type Row = typeof leads.$inferSelect;
-const toItem = (l: Row, sourceName: string | null): GigItem => ({
+const toItem = (
+  l: Row,
+  sourceName: string | null,
+  me: string,
+  claimExpiresAt: Date | null,
+): GigItem => ({
   id: l.id,
   title: l.title,
   description: l.description,
@@ -35,6 +53,8 @@ const toItem = (l: Row, sourceName: string | null): GigItem => ({
   createdAt: l.createdAt.toISOString(),
   publishedAt: l.publishedAt?.toISOString() ?? null,
   rejectReason: l.rejectReason,
+  claimedByMe: l.claimedBy === me,
+  claimExpiresAt: claimExpiresAt?.toISOString() ?? null,
 });
 
 @Injectable()
@@ -47,12 +67,18 @@ export class GigsService {
     @Inject(GigNotifier) private readonly notifier: GigNotifier,
   ) {}
 
-  /** Reviewers see every status. Everyone else only sees upcoming published gigs. */
+  /** Reviewers see every status. BDPs see upcoming published gigs plus the one they hold. */
   async list(q: GigQuery, actor: AuthUser): Promise<GigPage> {
     const reviewer = actor.permissions.has("gigs.review");
     const status = reviewer ? q.status : "new";
-    const conds: (SQL | undefined)[] = [eq(leads.status, status)];
-    if (!reviewer) conds.push(gt(leads.startsAt, new Date()));
+    const conds: (SQL | undefined)[] = [
+      reviewer
+        ? eq(leads.status, status)
+        : or(
+            and(eq(leads.status, "new"), gt(leads.startsAt, new Date())),
+            and(eq(leads.status, "claimed"), eq(leads.claimedBy, actor.id)),
+          ),
+    ];
     if (reviewer && q.sourceId) conds.push(eq(leads.sourceId, q.sourceId));
     if (q.search)
       conds.push(or(like(leads.title, `%${q.search}%`), like(leads.venue, `%${q.search}%`)));
@@ -60,11 +86,16 @@ export class GigsService {
 
     const [t] = await this.db.select({ total: count() }).from(leads).where(where);
     const rows = await this.db
-      .select({ l: leads, sourceName: leadSources.name })
+      .select({
+        l: leads,
+        sourceName: leadSources.name,
+        claimExpiresAt: leadClaims.expiresAt,
+      })
       .from(leads)
       .leftJoin(leadSources, eq(leadSources.id, leads.sourceId))
+      .leftJoin(leadClaims, eq(leadClaims.leadId, leads.id))
       .where(where)
-      .orderBy(status === "new" ? asc(leads.startsAt) : desc(leads.createdAt))
+      .orderBy(status === "new" || !reviewer ? asc(leads.startsAt) : desc(leads.createdAt))
       .limit(q.pageSize)
       .offset((q.page - 1) * q.pageSize);
 
@@ -77,7 +108,7 @@ export class GigsService {
         counts[g.status] = Number(g.n);
     }
     return {
-      items: rows.map((r) => toItem(r.l, r.sourceName)),
+      items: rows.map((r) => toItem(r.l, r.sourceName, actor.id, r.claimExpiresAt)),
       total: Number(t?.total ?? 0),
       page: q.page,
       pageSize: q.pageSize,

@@ -47,6 +47,10 @@ export function createQueueEvents(name: string, url: string) {
 }
 
 /** Domain events: the worker (or API) announces, the API reacts. */
-export type EventJob = { type: "lead.published"; leadIds: string[] };
+export type EventJob =
+  | { type: "lead.published"; leadIds: string[] }
+  | { type: "lead.claimed"; leadId: string; userId: string }
+  | { type: "lead.outreach_sent"; leadId: string; userId: string }
+  | { type: "claims.sweep" };
 
 export { type Job, Worker } from "bullmq";

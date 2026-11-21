@@ -1,6 +1,7 @@
 import type { GigItem, GigPage, ReviewGigsInput, ReviewResult } from "@cyneform/types";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { Fragment, useState } from "react";
+import { Countdown, useMyClaims } from "../components/ClaimBlock";
 import { Alert, Button, Card } from "../components/ui";
 import { api, messageOf } from "../lib/api";
 import { useAuth } from "../lib/auth";
@@ -8,6 +9,8 @@ import { useAuth } from "../lib/auth";
 const TABS = [
   ["pending_review", "Pending review"],
   ["new", "Published"],
+  ["claimed", "Claimed"],
+  ["outreach_sent", "Outreach sent"],
   ["rejected", "Rejected"],
 ] as const;
 const input = "rounded-md border border-slate-300 px-3 py-2 text-sm";
@@ -17,6 +20,8 @@ const money = (g: GigItem) =>
 export function Gigs() {
   const { can } = useAuth();
   const reviewer = can("gigs.review");
+  const canClaim = can("gigs.claim");
+  const canAssign = can("gigs.assign");
   const queryClient = useQueryClient();
   const [status, setStatus] = useState<string>(reviewer ? "pending_review" : "new");
   const [search, setSearch] = useState("");
@@ -27,6 +32,9 @@ export function Gigs() {
   const [reason, setReason] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
 
+  const myClaims = useMyClaims();
+  const hasClaim = (myClaims.data?.length ?? 0) > 0;
+
   const gigs = useQuery({
     queryKey: ["gigs", status, q, page],
     queryFn: () =>
@@ -34,7 +42,13 @@ export function Gigs() {
         `/gigs?${new URLSearchParams({ status, page: String(page), ...(q ? { search: q } : {}) })}`,
       ),
     placeholderData: keepPreviousData,
+    refetchInterval: 30_000,
   });
+
+  const refresh = () => {
+    queryClient.invalidateQueries({ queryKey: ["gigs"] });
+    queryClient.invalidateQueries({ queryKey: ["my-claims"] });
+  };
 
   const review = useMutation({
     mutationFn: (body: ReviewGigsInput) =>
@@ -45,7 +59,29 @@ export function Gigs() {
       setMsg(
         `${r.updated} updated${r.skipped ? `, ${r.skipped} skipped (already changed or event date passed)` : ""}.`,
       );
-      queryClient.invalidateQueries({ queryKey: ["gigs"] });
+      refresh();
+    },
+  });
+  const claim = useMutation({
+    mutationFn: (id: string) => api<unknown>(`/gigs/${id}/claim`, { method: "POST" }),
+    onSuccess: () => {
+      setMsg("Lead claimed. Send your outreach before the timer runs out.");
+      refresh();
+    },
+    onError: refresh, // someone else may have won: show the fresh list
+  });
+  const outreach = useMutation({
+    mutationFn: (id: string) => api<void>(`/gigs/${id}/outreach`, { method: "POST" }),
+    onSuccess: () => {
+      setMsg("Marked as outreach sent.");
+      refresh();
+    },
+  });
+  const release = useMutation({
+    mutationFn: (id: string) => api<void>(`/gigs/${id}/release`, { method: "POST" }),
+    onSuccess: () => {
+      setMsg("Lead released back to the pool.");
+      refresh();
     },
   });
 
@@ -59,6 +95,9 @@ export function Gigs() {
     });
   const act = (action: "approve" | "reject") =>
     review.mutate({ ids: [...picked], action, reason: reason || undefined });
+  const reviewable = status === "pending_review" || status === "new" || status === "rejected";
+  const error = claim.error ?? outreach.error ?? release.error ?? review.error;
+  const cols = (reviewer ? 7 : 5) + 1;
 
   return (
     <div>
@@ -66,11 +105,11 @@ export function Gigs() {
       <p className="mt-1 text-sm text-slate-500">
         {reviewer
           ? "Review what the hunter found. Approving publishes gigs and notifies admins and BDPs."
-          : "Upcoming gigs. Claiming opens in the next release."}
+          : "Claim a gig, then send your outreach before the timer ends."}
       </p>
 
       {reviewer && (
-        <div className="mt-4 flex gap-2">
+        <div className="mt-4 flex flex-wrap gap-2">
           {TABS.map(([key, label]) => (
             <button
               key={key}
@@ -106,11 +145,11 @@ export function Gigs() {
       </form>
 
       <div className="mt-4 space-y-2 empty:hidden">
-        {msg && <Alert tone="success">{msg}</Alert>}
-        {review.error && <Alert tone="error">{messageOf(review.error)}</Alert>}
+        {msg && !error && <Alert tone="success">{msg}</Alert>}
+        {error && <Alert tone="error">{messageOf(error)}</Alert>}
       </div>
 
-      {reviewer && picked.size > 0 && (
+      {reviewer && reviewable && picked.size > 0 && (
         <Card className="mt-4 flex flex-wrap items-center gap-3">
           <span className="text-sm font-medium">{picked.size} selected</span>
           {status !== "new" && (
@@ -144,14 +183,16 @@ export function Gigs() {
             <tr>
               {reviewer && (
                 <th className="w-8 py-2">
-                  <input
-                    type="checkbox"
-                    aria-label="Select all"
-                    checked={items.length > 0 && picked.size === items.length}
-                    onChange={(e) =>
-                      setPicked(e.target.checked ? new Set(items.map((i) => i.id)) : new Set())
-                    }
-                  />
+                  {reviewable && (
+                    <input
+                      type="checkbox"
+                      aria-label="Select all"
+                      checked={items.length > 0 && picked.size === items.length}
+                      onChange={(e) =>
+                        setPicked(e.target.checked ? new Set(items.map((i) => i.id)) : new Set())
+                      }
+                    />
+                  )}
                 </th>
               )}
               <th className="py-2">Gig</th>
@@ -160,20 +201,23 @@ export function Gigs() {
               <th>Category</th>
               <th>Budget</th>
               {reviewer && <th>Source</th>}
+              <th />
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {items.map((g) => (
-              <>
-                <tr key={g.id} className="align-top hover:bg-slate-50">
+              <Fragment key={g.id}>
+                <tr className={`align-top ${g.claimedByMe ? "bg-blue-50" : "hover:bg-slate-50"}`}>
                   {reviewer && (
                     <td className="py-2">
-                      <input
-                        type="checkbox"
-                        aria-label={`Select ${g.title}`}
-                        checked={picked.has(g.id)}
-                        onChange={() => toggle(g.id)}
-                      />
+                      {reviewable && (
+                        <input
+                          type="checkbox"
+                          aria-label={`Select ${g.title}`}
+                          checked={picked.has(g.id)}
+                          onChange={() => toggle(g.id)}
+                        />
+                      )}
                     </td>
                   )}
                   <td className="py-2">
@@ -195,13 +239,48 @@ export function Gigs() {
                   <td>{g.category ?? "—"}</td>
                   <td>{money(g)}</td>
                   {reviewer && <td>{g.sourceName ?? "—"}</td>}
+                  <td className="space-x-2 whitespace-nowrap text-right">
+                    {canClaim && g.status === "new" && (
+                      <Button
+                        disabled={claim.isPending || hasClaim}
+                        title={hasClaim ? "Finish your current claim first" : undefined}
+                        onClick={() => claim.mutate(g.id)}
+                      >
+                        Claim
+                      </Button>
+                    )}
+                    {g.status === "claimed" && g.claimExpiresAt && (
+                      <>
+                        <span className="text-xs text-slate-500">
+                          <Countdown to={g.claimExpiresAt} />
+                        </span>
+                        {g.claimedByMe && (
+                          <Button
+                            disabled={outreach.isPending}
+                            onClick={() => outreach.mutate(g.id)}
+                          >
+                            Mark outreach sent
+                          </Button>
+                        )}
+                        {(g.claimedByMe || canAssign) && (
+                          <button
+                            type="button"
+                            className="text-red-600 hover:underline"
+                            onClick={() =>
+                              window.confirm("Release this lead back to the pool?") &&
+                              release.mutate(g.id)
+                            }
+                          >
+                            Release
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </td>
                 </tr>
                 {open === g.id && (
-                  <tr key={`${g.id}-d`} className="bg-slate-50">
-                    <td
-                      colSpan={reviewer ? 7 : 5}
-                      className="space-y-2 px-4 py-3 text-xs text-slate-700"
-                    >
+                  <tr className="bg-slate-50">
+                    <td colSpan={cols} className="space-y-2 px-4 py-3 text-xs text-slate-700">
                       {g.description && <p className="whitespace-pre-line">{g.description}</p>}
                       <p>
                         {[...g.contacts.emails, ...g.contacts.phones, ...g.contacts.handles].join(
@@ -225,12 +304,14 @@ export function Gigs() {
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             ))}
             {items.length === 0 && (
               <tr>
-                <td colSpan={7} className="py-6 text-center text-slate-500">
-                  Nothing here.
+                <td colSpan={cols} className="py-6 text-center text-slate-500">
+                  {reviewer
+                    ? "Nothing here."
+                    : "No gigs are available right now. Please check back soon."}
                 </td>
               </tr>
             )}

@@ -108,6 +108,18 @@ export const PERMISSIONS = [
     description: "Review, approve and reject discovered gigs",
     superAdminOnly: false,
   },
+  {
+    code: "gigs.claim",
+    module: "gigs",
+    description: "Claim gigs from the lead pool",
+    superAdminOnly: false,
+  },
+  {
+    code: "gigs.assign",
+    module: "gigs",
+    description: "Release or reassign claimed gigs",
+    superAdminOnly: false,
+  },
 ] as const;
 export type PermissionCode = (typeof PERMISSIONS)[number]["code"];
 
@@ -129,6 +141,7 @@ export const ROLE_DEFAULTS: Record<RoleCode, readonly PermissionCode[]> = {
     "sources.manage",
     "gigs.view",
     "gigs.review",
+    "gigs.assign",
   ],
-  bdp: ["leave.request", "gigs.view"],
+  bdp: ["leave.request", "gigs.view", "gigs.claim"],
 };
