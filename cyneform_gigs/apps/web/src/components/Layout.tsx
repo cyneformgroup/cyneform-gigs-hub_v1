@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate } from "react-router";
 import { useAuth } from "../lib/auth";
+import { ClaimBlock } from "./ClaimBlock";
 import { NotificationBell } from "./NotificationBell";
 import { Button } from "./ui";
 
@@ -60,7 +61,9 @@ export function Layout() {
           </Button>
         </header>
         <main className="flex-1 p-6">
-          <Outlet />
+          <ClaimBlock>
+            <Outlet />
+          </ClaimBlock>
         </main>
       </div>
     </div>

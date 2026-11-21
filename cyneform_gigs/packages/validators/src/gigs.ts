@@ -28,6 +28,8 @@ export const GigItemSchema = z.object({
   createdAt: z.string(),
   publishedAt: z.string().nullable(),
   rejectReason: z.string().nullable(),
+  claimedByMe: z.boolean(),
+  claimExpiresAt: z.string().nullable(),
 });
 
 export const GigPageSchema = z.object({
@@ -52,4 +54,14 @@ export const ReviewGigsSchema = z
 export const ReviewResultSchema = z.object({
   updated: z.number(),
   skipped: z.number(),
+});
+
+export const ActiveClaimSchema = z.object({
+  leadId: z.string(),
+  title: z.string(),
+  venue: z.string().nullable(),
+  startsAt: z.string(),
+  eventUrl: z.string(),
+  claimedAt: z.string(),
+  expiresAt: z.string(),
 });

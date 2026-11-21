@@ -106,6 +106,9 @@ export const leads = mysqlTable(
     reviewedBy: ref("reviewed_by"),
     reviewedAt: opt("reviewed_at"),
     rejectReason: varchar("reject_reason", { length: 255 }),
+    claimedBy: ref("claimed_by"),
+    claimedAt: opt("claimed_at"),
+    outreachSentAt: opt("outreach_sent_at"),
     createdAt: created(),
     updatedAt: updated(),
   },
@@ -113,5 +116,19 @@ export const leads = mysqlTable(
     index("leads_status_idx").on(t.status, t.startsAt),
     index("leads_event_url_idx").on(t.eventUrl),
     index("leads_source_idx").on(t.sourceId),
+  ],
+);
+
+export const leadClaims = mysqlTable(
+  "lead_claims",
+  {
+    leadId: char("lead_id", { length: 36 }).primaryKey(),
+    userId: ref("user_id").notNull(),
+    claimedAt: datetime("claim_time", { fsp: 3 }).notNull(),
+    expiresAt: datetime("expires_at", { fsp: 3 }).notNull(),
+  },
+  (t) => [
+    index("lead_claims_user_idx").on(t.userId),
+    index("lead_claims_expiry_idx").on(t.expiresAt),
   ],
 );
