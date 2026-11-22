@@ -120,6 +120,36 @@ export const PERMISSIONS = [
     description: "Release or reassign claimed gigs",
     superAdminOnly: false,
   },
+  {
+    code: "rules.view",
+    module: "rules",
+    description: "View points rules and their history",
+    superAdminOnly: false,
+  },
+  {
+    code: "rules.manage",
+    module: "rules",
+    description: "Edit points rules, values and switches",
+    superAdminOnly: false,
+  },
+  {
+    code: "points.view_own",
+    module: "points",
+    description: "View own points",
+    superAdminOnly: false,
+  },
+  {
+    code: "points.view_all",
+    module: "points",
+    description: "View every BDP's points ledger",
+    superAdminOnly: false,
+  },
+  {
+    code: "points.manage",
+    module: "points",
+    description: "Verify points and make manual awards and adjustments",
+    superAdminOnly: false,
+  },
 ] as const;
 export type PermissionCode = (typeof PERMISSIONS)[number]["code"];
 
@@ -142,6 +172,11 @@ export const ROLE_DEFAULTS: Record<RoleCode, readonly PermissionCode[]> = {
     "gigs.view",
     "gigs.review",
     "gigs.assign",
+    "rules.view",
+    "rules.manage",
+    "points.view_own",
+    "points.view_all",
+    "points.manage",
   ],
-  bdp: ["leave.request", "gigs.view", "gigs.claim"],
+  bdp: ["leave.request", "gigs.view", "gigs.claim", "points.view_own"],
 };

@@ -51,6 +51,7 @@ export type EventJob =
   | { type: "lead.published"; leadIds: string[] }
   | { type: "lead.claimed"; leadId: string; userId: string }
   | { type: "lead.outreach_sent"; leadId: string; userId: string }
-  | { type: "claims.sweep" };
+  | { type: "claims.sweep" }
+  | { type: "points.expire" };
 
 export { type Job, Worker } from "bullmq";

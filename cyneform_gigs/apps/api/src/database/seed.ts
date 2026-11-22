@@ -4,6 +4,7 @@ import { PERMISSIONS, ROLE_CODES, ROLE_DEFAULTS } from "@cyneform/validators";
 import { createPool, type PoolConnection } from "mysql2/promise";
 import { blindIndex, currentKeyId, decrypt, randomToken, sha256 } from "../common/crypto";
 import { env } from "../config/env";
+import { seedPoints } from "../points/points.seed";
 
 const roleNames = {
   super_admin: "Super Admin",
@@ -198,6 +199,8 @@ async function seed() {
           );
         }
       }
+
+      await seedPoints(connection);
 
       const accounts: SeedAccount[] = [
         {

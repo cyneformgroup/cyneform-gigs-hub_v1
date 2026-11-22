@@ -6,6 +6,7 @@ export * from "./health";
 export * from "./notifications";
 export * from "./people";
 export * from "./permissions";
+export * from "./points";
 export * from "./settings";
 export * from "./sources";
 export * from "./users";

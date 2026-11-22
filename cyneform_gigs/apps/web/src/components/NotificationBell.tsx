@@ -13,7 +13,7 @@ export function NotificationBell() {
   const { data } = useQuery({
     queryKey: ["notifications"],
     queryFn: () => api<NotificationPage>("/notifications"),
-    refetchInterval: 30_000,
+    refetchInterval: 5_000,
   });
   const read = useMutation({
     mutationFn: (id: string) => api<void>(`/notifications/${id}/read`, { method: "POST" }),

@@ -6,6 +6,9 @@ import { ForgotPassword } from "./pages/ForgotPassword";
 import { Gigs } from "./pages/Gigs";
 import { Leave } from "./pages/Leave";
 import { Login } from "./pages/Login";
+import { MyPoints } from "./pages/MyPoints";
+import { PointsAdmin } from "./pages/PointsAdmin";
+import { PointsRules } from "./pages/PointsRules";
 import { Profile } from "./pages/Profile";
 import { SetPassword } from "./pages/SetPassword";
 import { Settings } from "./pages/Settings";
@@ -32,6 +35,15 @@ export default function App() {
           <Route path="settings" element={<Settings />} />
           <Route path="sources" element={<Sources />} />
           <Route path="gigs" element={<Gigs />} />
+          <Route element={<RequireAuth permission="points.view_own" />}>
+            <Route path="points" element={<MyPoints />} />
+          </Route>
+          <Route element={<RequireAuth permission="points.view_all" />}>
+            <Route path="points/admin" element={<PointsAdmin />} />
+          </Route>
+          <Route element={<RequireAuth permission="rules.view" />}>
+            <Route path="points/rules" element={<PointsRules />} />
+          </Route>
         </Route>
       </Route>
 

@@ -41,6 +41,7 @@ import { AUTH, env } from "../config/env";
 import { DB, type Db } from "../database/database.module";
 import { ClaimsService } from "../gigs/claims.service";
 import { MailService } from "../mail/mail.service";
+import { PointsService } from "../points/points.service";
 
 type Actor = Pick<AuthUser, "id" | "role" | "permissions"> | null; // null = system (seed)
 
@@ -60,6 +61,8 @@ export class UsersService {
     private readonly mail: MailService,
     @Inject(ClaimsService)
     private readonly claims: ClaimsService,
+    @Inject(PointsService)
+    private readonly points: PointsService,
   ) {}
 
   private readonly summaryColumns = {
@@ -356,6 +359,7 @@ export class UsersService {
       .select({
         id: users.id,
         status: users.status,
+        statusChangedAt: users.statusChangedAt,
         role: roles.code,
         deactivationType: users.deactivationType,
       })
@@ -482,6 +486,9 @@ export class UsersService {
       },
       client,
     });
+    if (t.status !== "active" && input.status === "active" && t.statusChangedAt) {
+      await this.points.extendExpiry(id, Date.now() - t.statusChangedAt.getTime(), actor, client);
+    }
     if (input.status !== "active")
       await this.claims.releaseAllFor(id, `status_${input.status}`, actor, client);
     const updated = await this.detail(id, null);

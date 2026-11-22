@@ -1,5 +1,8 @@
+import { emit } from "../events";
+
 export const dailyTasks: { name: string; run: () => Promise<void> }[] = [
-  // Phase 4: harvest, Phase 5: claim expiry, Phase 6: points expiry, Phase 12: inactivity, reminders...
+  { name: "points-expiry", run: () => emit({ type: "points.expire" }) },
+  // Phase 7+: reminders, inactivity...
 ];
 
 export async function daily() {

@@ -12,6 +12,7 @@ import { HealthController } from "./health/health.controller";
 import { LeaveModule } from "./leave/leave.module";
 import { MailModule } from "./mail/mail.module";
 import { NotificationsModule } from "./notifications/notifications.module";
+import { PointsModule } from "./points/points.module";
 import { SettingsModule } from "./settings/settings.module";
 import { SourcesModule } from "./sources/sources.module";
 import { UsersModule } from "./users/users.module";
@@ -27,6 +28,7 @@ import { UsersModule } from "./users/users.module";
     UsersModule,
     LeaveModule,
     NotificationsModule,
+    PointsModule,
     SettingsModule,
     SourcesModule,
     GigsModule,
