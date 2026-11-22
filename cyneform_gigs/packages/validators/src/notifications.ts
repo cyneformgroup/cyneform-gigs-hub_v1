@@ -9,6 +9,10 @@ export const NOTIFICATION_TYPES = [
   "gigs.claimed",
   "gigs.released",
   "gigs.claim_expired",
+  "points.awarded",
+  "points.expired",
+  "points.milestone",
+  "points.verification",
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 

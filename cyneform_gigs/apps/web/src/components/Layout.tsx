@@ -17,6 +17,9 @@ const nav = [
   { to: "/settings", label: "Settings", end: false, any: ["settings.manage"] },
   { to: "/sources", label: "Sources", any: ["sources.view"] },
   { to: "/gigs", label: "Gigs", any: ["gigs.view"] },
+  { to: "/points", label: "My points", end: true, any: ["points.view_own"] },
+  { to: "/points/admin", label: "Points admin", any: ["points.view_all"] },
+  { to: "/points/rules", label: "Points rules", any: ["rules.view"] },
 ];
 
 export function Layout() {
