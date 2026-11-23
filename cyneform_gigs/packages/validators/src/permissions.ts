@@ -174,6 +174,24 @@ export const PERMISSIONS = [
     description: "Flag a BDP's outreach as duplicate or generic (0 quality points)",
     superAdminOnly: false,
   },
+  {
+    code: "compensation.view_own",
+    module: "compensation",
+    description: "View own deals, payouts and rollover",
+    superAdminOnly: false,
+  },
+  {
+    code: "compensation.view_all",
+    module: "compensation",
+    description: "View every BDP's deal compensation",
+    superAdminOnly: false,
+  },
+  {
+    code: "compensation.manage",
+    module: "compensation",
+    description: "Approve and pay compensation, set elite cap",
+    superAdminOnly: false,
+  },
 ] as const;
 export type PermissionCode = (typeof PERMISSIONS)[number]["code"];
 
@@ -204,6 +222,8 @@ export const ROLE_DEFAULTS: Record<RoleCode, readonly PermissionCode[]> = {
     "crm.view_all",
     "crm.view_own",
     "crm.flag",
+    "compensation.view_all",
+    "compensation.manage",
   ],
   bdp: [
     "leave.request",
@@ -212,5 +232,6 @@ export const ROLE_DEFAULTS: Record<RoleCode, readonly PermissionCode[]> = {
     "points.view_own",
     "crm.view_own",
     "crm.edit_own",
+    "compensation.view_own",
   ],
 };

@@ -12,6 +12,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, useRef, useState } from "react";
 import { Link, useParams } from "react-router";
+import { CloseDealModal } from "../components/CloseDealModal";
 import { Alert, Badge, Button, Card } from "../components/ui";
 import { api, messageOf } from "../lib/api";
 import { useAuth } from "../lib/auth";
@@ -33,6 +34,7 @@ export function CrmEntry() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [msg, setMsg] = useState<{ tone: "success" | "error"; text: string } | null>(null);
+  const [closing, setClosing] = useState(false);
 
   const q = useQuery({
     queryKey: ["crm-entry", id],
@@ -406,6 +408,13 @@ export function CrmEntry() {
                 key={s}
                 disabled={move.isPending}
                 onClick={() => {
+                  if (s === "won")
+                    return e.isCompleted
+                      ? setClosing(true)
+                      : setMsg({
+                          tone: "error",
+                          text: "Complete all required fields and upload evidence before closing the deal.",
+                        });
                   if (
                     (s === "won" || s === "lost") &&
                     !window.confirm(`Mark this entry as ${s}? This ends the entry.`)
@@ -454,6 +463,7 @@ export function CrmEntry() {
           </Button>
         </Card>
       )}
+      {closing && <CloseDealModal entry={e} onClose={() => setClosing(false)} />}
     </div>
   );
 }

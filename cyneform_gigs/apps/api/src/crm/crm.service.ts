@@ -308,6 +308,8 @@ export class CrmService implements OnModuleDestroy {
     client?: ClientInfo,
   ): Promise<EntryDetail> {
     const e = await this.load(id, actor, true);
+    if (input.status === "won")
+      throw badRequest("USE_CLOSE_DEAL", "Use Close deal to mark this entry as won.");
     const statuses = json<string[]>(e.statuses, []);
     if (!allowedNext(statuses).includes(input.status))
       throw badRequest("INVALID_TRANSITION", "That status change is not allowed from here.");
@@ -317,7 +319,6 @@ export class CrmService implements OnModuleDestroy {
       .set({
         statuses: JSON.stringify([...statuses, input.status]),
         currentStatus: input.status,
-        ...(input.status === "won" ? { wonAt: now } : {}),
         ...(input.status === "lost" ? { lostAt: now } : {}),
       })
       .where(eq(crmEntries.id, id));

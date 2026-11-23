@@ -6,6 +6,7 @@ import { AccessModule } from "./access/access.module";
 import { AuditModule } from "./audit/audit.module";
 import { AuthModule } from "./auth/auth.module";
 import { ErrorFilter } from "./common/errors";
+import { CompensationModule } from "./compensation/compensation.module";
 import { CrmModule } from "./crm/crm.module";
 import { DatabaseModule } from "./database/database.module";
 import { GigsModule } from "./gigs/gigs.module";
@@ -34,6 +35,7 @@ import { UsersModule } from "./users/users.module";
     SourcesModule,
     GigsModule,
     CrmModule,
+    CompensationModule,
   ],
   controllers: [HealthController],
   providers: [

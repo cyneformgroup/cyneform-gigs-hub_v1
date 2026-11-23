@@ -19,6 +19,10 @@ export const NOTIFICATION_TYPES = [
   "crm.call_booked",
   "crm.call_changed",
   "crm.flagged",
+  "compensation.deal_closed",
+  "compensation.approved",
+  "compensation.paid",
+  "compensation.rollover_expired",
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 

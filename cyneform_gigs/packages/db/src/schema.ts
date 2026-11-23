@@ -1,4 +1,5 @@
 export * from "./auth/schema";
+export * from "./compensation/schema";
 export * from "./crm/schema";
 export * from "./leads/schema";
 export * from "./notifications/schema";

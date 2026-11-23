@@ -1,5 +1,6 @@
 export * from "./auth";
 export * from "./common";
+export * from "./compensation";
 export * from "./constants";
 export * from "./crm";
 export * from "./gigs";

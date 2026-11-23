@@ -70,6 +70,7 @@ export const pointsVault = mysqlTable(
     expiredAt: opt("expired_at"),
     createdBy: ref("created_by"),
     note: varchar("note", { length: 500 }),
+    usedInDealId: ref("used_in_deal_id"),
     createdAt: stamp("created_at"),
   },
   (t) => [

@@ -6,6 +6,7 @@ import {
   type OnModuleDestroy,
   type OnModuleInit,
 } from "@nestjs/common";
+import { CompensationService } from "../compensation/compensation.service";
 import { env } from "../config/env";
 import { CrmService } from "../crm/crm.service";
 import { PointsService } from "../points/points.service";
@@ -22,6 +23,7 @@ export class EventsConsumer implements OnModuleInit, OnModuleDestroy {
     @Inject(ClaimsService) private readonly claims: ClaimsService,
     @Inject(PointsService) private readonly points: PointsService,
     @Inject(CrmService) private readonly crm: CrmService,
+    @Inject(CompensationService) private readonly compensation: CompensationService,
   ) {}
 
   onModuleInit() {
@@ -38,6 +40,7 @@ export class EventsConsumer implements OnModuleInit, OnModuleDestroy {
           await this.crm.awardQualityForLead(e.userId, e.leadId, "hook_ghosted");
         } else if (e.type === "crm.reminders") await this.crm.remindDue();
         else if (e.type === "crm.followup") await this.crm.sendFollowup(e.entryId, e.n);
+        else if (e.type === "compensation.expire") await this.compensation.expireRollover();
         else if (e.type === "points.expire") await this.points.expireDue();
       },
       { connection: redisOptions(env.REDIS_URL, "worker"), concurrency: 1 },

@@ -18,6 +18,8 @@ const nav = [
   { to: "/sources", label: "Sources", any: ["sources.view"] },
   { to: "/gigs", label: "Gigs", any: ["gigs.view"] },
   { to: "/crm", label: "CRM", any: ["crm.view_own", "crm.view_all"] },
+  { to: "/compensation", label: "My compensation", end: true, any: ["compensation.view_own"] },
+  { to: "/compensation/admin", label: "Compensation admin", any: ["compensation.view_all"] },
   { to: "/points", label: "My points", end: true, any: ["points.view_own"] },
   { to: "/points/admin", label: "Points admin", any: ["points.view_all"] },
   { to: "/points/rules", label: "Points rules", any: ["rules.view"] },

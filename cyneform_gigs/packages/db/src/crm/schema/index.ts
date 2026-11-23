@@ -51,6 +51,7 @@ export const crmEntries = mysqlTable(
     flaggedGenericAt: opt("flagged_generic_at"),
     flaggedBy: ref("flagged_by"),
     flagReason: varchar("flag_reason", { length: 500 }),
+    closedProject: text("closed_project"),
     createdAt: stamp("created_at"),
     updatedAt: datetime("updated_at", { fsp: 3 })
       .notNull()

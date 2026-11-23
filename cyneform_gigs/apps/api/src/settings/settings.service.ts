@@ -58,6 +58,24 @@ export class SettingsService {
       if (!same(parsed.data, current.get(key)))
         changes.push({ key, from: current.get(key), to: parsed.data });
     }
+    const candidate = new Map(current);
+    for (const change of changes) candidate.set(change.key, change.to);
+    const limits = candidate.get("compensation.tier_limits") as readonly number[] | undefined;
+    const rates = candidate.get("compensation.tier_rates") as readonly number[] | undefined;
+    if (
+      limits &&
+      rates &&
+      (rates.length !== limits.length + 1 ||
+        limits.some((n, i) => {
+          const previous = limits[i - 1];
+          return previous !== undefined && n <= previous;
+        }))
+    ) {
+      throw badRequest(
+        "INVALID_SETTING",
+        "Commission tier rates need one more entry than the ascending tier limits.",
+      );
+    }
     if (changes.length === 0) throw badRequest("NO_CHANGE", "Nothing to update.");
 
     await db.transaction(async (tx) => {

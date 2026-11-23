@@ -22,6 +22,7 @@ export * from "./auth/schema";
 export type { Db } from "./client";
 export { db, pool } from "./client";
 export * from "./columns";
+export * from "./compensation/schema";
 export * from "./crm/schema";
 export * from "./leads/schema";
 export * from "./notifications/schema";
