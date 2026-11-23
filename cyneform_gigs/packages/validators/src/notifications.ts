@@ -13,6 +13,12 @@ export const NOTIFICATION_TYPES = [
   "points.expired",
   "points.milestone",
   "points.verification",
+  "crm.entry_created",
+  "crm.followup_due",
+  "crm.completed",
+  "crm.call_booked",
+  "crm.call_changed",
+  "crm.flagged",
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 

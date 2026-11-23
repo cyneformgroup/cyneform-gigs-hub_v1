@@ -52,18 +52,23 @@ export function refreshSession(): Promise<AuthSession | null> {
 interface Options {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
+  blob?: boolean;
 }
 
-export async function api<T>(path: string, { method = "GET", body }: Options = {}): Promise<T> {
+export async function api<T>(
+  path: string,
+  { method = "GET", body, blob = false }: Options = {},
+): Promise<T> {
+  const form = typeof FormData !== "undefined" && body instanceof FormData;
   const send = () =>
     fetch(`${BASE}${path}`, {
       method,
       credentials: "include",
       headers: {
-        ...(body !== undefined ? { "content-type": "application/json" } : {}),
+        ...(body !== undefined && !form ? { "content-type": "application/json" } : {}),
         ...(accessToken ? { authorization: `Bearer ${accessToken}` } : {}),
       },
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: body !== undefined ? (form ? (body as FormData) : JSON.stringify(body)) : undefined,
     });
 
   let res = await send();
@@ -82,6 +87,7 @@ export async function api<T>(path: string, { method = "GET", body }: Options = {
   }
 
   if (res.status === 204) return undefined as T;
+  if (res.ok && blob) return (await res.blob()) as T;
   const data = (await res.json().catch(() => null)) as T | ApiErrorBody | null;
   if (!res.ok) {
     const error = (data as ApiErrorBody | null)?.error ?? {

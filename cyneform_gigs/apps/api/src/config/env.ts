@@ -22,6 +22,8 @@ const EnvSchema = z.object({
   SEED_BDP_PERSONAL_EMAIL: z.email().default("jane.personal@cyneform.test"),
   SUPPORT_WHATSAPP: z.string().default("+254 710 557 446"),
   REDIS_URL: z.string().default("redis://localhost:6379"),
+  UPLOAD_DIR: z.string().default("./storage"),
+  CALCOM_WEBHOOK_SECRET: z.string().optional(),
 });
 
 const parsed = EnvSchema.safeParse(process.env);

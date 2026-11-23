@@ -6,7 +6,7 @@ import helmet from "helmet";
 import { AppModule } from "./app.module";
 import { env } from "./config/env";
 
-const app = await NestFactory.create<NestExpressApplication>(AppModule);
+const app = await NestFactory.create<NestExpressApplication>(AppModule, { rawBody: true });
 app.set("trust proxy", env.TRUST_PROXY);
 app.use(helmet());
 app.use(cookieParser());

@@ -2,6 +2,7 @@ import type { GigItem, GigPage, ReviewGigsInput, ReviewResult } from "@cyneform/
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Fragment, useState } from "react";
 import { Countdown, useMyClaims } from "../components/ClaimBlock";
+import { OutreachModal } from "../components/OutreachModal";
 import { Alert, Button, Card } from "../components/ui";
 import { api, messageOf } from "../lib/api";
 import { useAuth } from "../lib/auth";
@@ -31,6 +32,7 @@ export function Gigs() {
   const [open, setOpen] = useState<string | null>(null);
   const [reason, setReason] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
+  const [outreachFor, setOutreachFor] = useState<GigItem | null>(null);
 
   const myClaims = useMyClaims();
   const hasClaim = (myClaims.data?.length ?? 0) > 0;
@@ -70,13 +72,6 @@ export function Gigs() {
     },
     onError: refresh, // someone else may have won: show the fresh list
   });
-  const outreach = useMutation({
-    mutationFn: (id: string) => api<void>(`/gigs/${id}/outreach`, { method: "POST" }),
-    onSuccess: () => {
-      setMsg("Marked as outreach sent.");
-      refresh();
-    },
-  });
   const release = useMutation({
     mutationFn: (id: string) => api<void>(`/gigs/${id}/release`, { method: "POST" }),
     onSuccess: () => {
@@ -96,7 +91,7 @@ export function Gigs() {
   const act = (action: "approve" | "reject") =>
     review.mutate({ ids: [...picked], action, reason: reason || undefined });
   const reviewable = status === "pending_review" || status === "new" || status === "rejected";
-  const error = claim.error ?? outreach.error ?? release.error ?? review.error;
+  const error = claim.error ?? release.error ?? review.error;
   const cols = (reviewer ? 7 : 5) + 1;
 
   return (
@@ -255,12 +250,7 @@ export function Gigs() {
                           <Countdown to={g.claimExpiresAt} />
                         </span>
                         {g.claimedByMe && (
-                          <Button
-                            disabled={outreach.isPending}
-                            onClick={() => outreach.mutate(g.id)}
-                          >
-                            Mark outreach sent
-                          </Button>
+                          <Button onClick={() => setOutreachFor(g)}>Mark outreach sent</Button>
                         )}
                         {(g.claimedByMe || canAssign) && (
                           <button
@@ -342,6 +332,7 @@ export function Gigs() {
           </span>
         </div>
       </Card>
+      {outreachFor && <OutreachModal gig={outreachFor} onClose={() => setOutreachFor(null)} />}
     </div>
   );
 }

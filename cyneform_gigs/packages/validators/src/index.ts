@@ -1,6 +1,7 @@
 export * from "./auth";
 export * from "./common";
 export * from "./constants";
+export * from "./crm";
 export * from "./gigs";
 export * from "./health";
 export * from "./notifications";

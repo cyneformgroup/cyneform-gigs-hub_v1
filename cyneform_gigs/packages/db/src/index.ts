@@ -13,6 +13,7 @@ export {
   lt,
   lte,
   not,
+  notInArray,
   or,
   sql,
 } from "drizzle-orm";
@@ -21,6 +22,7 @@ export * from "./auth/schema";
 export type { Db } from "./client";
 export { db, pool } from "./client";
 export * from "./columns";
+export * from "./crm/schema";
 export * from "./leads/schema";
 export * from "./notifications/schema";
 export * from "./people/schema";

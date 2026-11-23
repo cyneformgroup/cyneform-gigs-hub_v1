@@ -150,6 +150,30 @@ export const PERMISSIONS = [
     description: "Verify points and make manual awards and adjustments",
     superAdminOnly: false,
   },
+  {
+    code: "crm.view_own",
+    module: "crm",
+    description: "View own CRM entries",
+    superAdminOnly: false,
+  },
+  {
+    code: "crm.edit_own",
+    module: "crm",
+    description: "Edit own CRM entries, upload evidence and change status",
+    superAdminOnly: false,
+  },
+  {
+    code: "crm.view_all",
+    module: "crm",
+    description: "View every BDP's CRM entries and evidence",
+    superAdminOnly: false,
+  },
+  {
+    code: "crm.flag",
+    module: "crm",
+    description: "Flag a BDP's outreach as duplicate or generic (0 quality points)",
+    superAdminOnly: false,
+  },
 ] as const;
 export type PermissionCode = (typeof PERMISSIONS)[number]["code"];
 
@@ -177,6 +201,16 @@ export const ROLE_DEFAULTS: Record<RoleCode, readonly PermissionCode[]> = {
     "points.view_own",
     "points.view_all",
     "points.manage",
+    "crm.view_all",
+    "crm.view_own",
+    "crm.flag",
   ],
-  bdp: ["leave.request", "gigs.view", "gigs.claim", "points.view_own"],
+  bdp: [
+    "leave.request",
+    "gigs.view",
+    "gigs.claim",
+    "points.view_own",
+    "crm.view_own",
+    "crm.edit_own",
+  ],
 };

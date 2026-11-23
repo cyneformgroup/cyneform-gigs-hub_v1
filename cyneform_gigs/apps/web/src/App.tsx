@@ -1,6 +1,8 @@
 import { Navigate, Route, Routes } from "react-router";
 import { Layout } from "./components/Layout";
 import { RequireAuth } from "./components/RequireAuth";
+import { CrmEntry } from "./pages/CrmEntry";
+import { CrmList } from "./pages/CrmList";
 import { Dashboard } from "./pages/Dashboard";
 import { ForgotPassword } from "./pages/ForgotPassword";
 import { Gigs } from "./pages/Gigs";
@@ -35,6 +37,8 @@ export default function App() {
           <Route path="settings" element={<Settings />} />
           <Route path="sources" element={<Sources />} />
           <Route path="gigs" element={<Gigs />} />
+          <Route path="crm" element={<CrmList />} />
+          <Route path="crm/:id" element={<CrmEntry />} />
           <Route element={<RequireAuth permission="points.view_own" />}>
             <Route path="points" element={<MyPoints />} />
           </Route>
