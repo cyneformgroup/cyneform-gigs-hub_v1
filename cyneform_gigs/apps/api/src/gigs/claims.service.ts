@@ -1,12 +1,13 @@
 import { and, count, eq, getNumber, gt, leadClaims, leads, lte } from "@cyneform/db";
 import { createQueue, type EventJob, QUEUES } from "@cyneform/queue";
-import type { ActiveClaim } from "@cyneform/types";
+import type { ActiveClaim, OutreachInput } from "@cyneform/types";
 import { Inject, Injectable, Logger, type OnModuleDestroy } from "@nestjs/common";
 import type { AuthUser } from "../access/auth-user";
 import { AuditService } from "../audit/audit.service";
 import type { ClientInfo } from "../common/client-info";
 import { AppError, badRequest, conflict, forbidden, notFound } from "../common/errors";
 import { env } from "../config/env";
+import { CrmService } from "../crm/crm.service";
 import { DB, type Db } from "../database/database.module";
 import { NotificationsService } from "../notifications/notifications.service";
 
@@ -21,6 +22,7 @@ export class ClaimsService implements OnModuleDestroy {
     @Inject(DB) private readonly db: Db,
     @Inject(AuditService) private readonly audit: AuditService,
     @Inject(NotificationsService) private readonly notifications: NotificationsService,
+    @Inject(CrmService) private readonly crm: CrmService,
   ) {}
 
   onModuleDestroy() {
@@ -168,8 +170,14 @@ export class ClaimsService implements OnModuleDestroy {
   }
 
   /** Minimal for now. Phase 7 adds channels, the CRM entry and evidence in this same transaction. */
-  async markOutreachSent(leadId: string, actor: AuthUser, client?: ClientInfo) {
+  async markOutreachSent(
+    leadId: string,
+    input: OutreachInput,
+    actor: AuthUser,
+    client?: ClientInfo,
+  ): Promise<{ entryId: string }> {
     const now = new Date();
+    const out = { entryId: "", title: "" };
     await this.db.transaction(async (tx) => {
       const lead = await this.lockLead(tx, leadId);
       if (lead.status !== "claimed" || lead.claimedBy !== actor.id)
@@ -179,18 +187,33 @@ export class ClaimsService implements OnModuleDestroy {
         throw badRequest("CLAIM_EXPIRED", "Your claim has expired. Please claim the lead again.");
       await tx
         .update(leads)
-        .set({ status: "outreach_sent", outreachSentAt: now })
+        .set({
+          status: "outreach_sent",
+          outreachSentAt: now,
+          outreachChannels: JSON.stringify(input.channels),
+          outreachNotes: input.notes ?? null,
+        })
         .where(eq(leads.id, leadId));
       await tx.delete(leadClaims).where(eq(leadClaims.leadId, leadId));
+      out.entryId = await this.crm.createFromLead(tx, lead, actor.id, input);
+      out.title = lead.title;
     });
+    await this.crm.scheduleFollowups(out.entryId);
     await this.audit.record({
       actor,
       action: "gigs.outreach_sent",
       targetType: "gig",
       targetId: leadId,
+      details: { channels: input.channels, entryId: out.entryId },
       client,
     });
+    await this.notifications.notify(actor.id, {
+      type: "crm.entry_created",
+      title: `CRM entry created for ${out.title}. Please complete the required fields.`,
+      link: `/crm/${out.entryId}`,
+    });
     void this.emit({ type: "lead.outreach_sent", leadId, userId: actor.id });
+    return out;
   }
 
   async mine(actor: AuthUser): Promise<ActiveClaim[]> {

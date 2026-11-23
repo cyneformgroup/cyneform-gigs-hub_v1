@@ -6,7 +6,9 @@ import {
   type OnModuleDestroy,
   type OnModuleInit,
 } from "@nestjs/common";
+import { CompensationService } from "../compensation/compensation.service";
 import { env } from "../config/env";
+import { CrmService } from "../crm/crm.service";
 import { PointsService } from "../points/points.service";
 import { ClaimsService } from "./claims.service";
 import { GigNotifier } from "./gig-notifier.service";
@@ -20,6 +22,8 @@ export class EventsConsumer implements OnModuleInit, OnModuleDestroy {
     @Inject(GigNotifier) private readonly notifier: GigNotifier,
     @Inject(ClaimsService) private readonly claims: ClaimsService,
     @Inject(PointsService) private readonly points: PointsService,
+    @Inject(CrmService) private readonly crm: CrmService,
+    @Inject(CompensationService) private readonly compensation: CompensationService,
   ) {}
 
   onModuleInit() {
@@ -31,12 +35,12 @@ export class EventsConsumer implements OnModuleInit, OnModuleDestroy {
         else if (e.type === "claims.sweep") await this.claims.sweepExpired();
         else if (e.type === "lead.claimed")
           await this.points.award({ userId: e.userId, ruleKey: "claim", leadId: e.leadId });
-        else if (e.type === "lead.outreach_sent")
-          await this.points.award({
-            userId: e.userId,
-            ruleKey: "outreach_sent",
-            leadId: e.leadId,
-          });
+        else if (e.type === "lead.outreach_sent") {
+          await this.points.award({ userId: e.userId, ruleKey: "outreach_sent", leadId: e.leadId });
+          await this.crm.awardQualityForLead(e.userId, e.leadId, "hook_ghosted");
+        } else if (e.type === "crm.reminders") await this.crm.remindDue();
+        else if (e.type === "crm.followup") await this.crm.sendFollowup(e.entryId, e.n);
+        else if (e.type === "compensation.expire") await this.compensation.expireRollover();
         else if (e.type === "points.expire") await this.points.expireDue();
       },
       { connection: redisOptions(env.REDIS_URL, "worker"), concurrency: 1 },

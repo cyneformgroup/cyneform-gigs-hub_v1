@@ -100,7 +100,13 @@ export const RULE_LABELS: Record<string, string> = {
   [MANUAL_ADJUSTMENT]: "Manual adjustment",
 };
 
-export const LEDGER_STATUSES = ["active", "pending_verification", "expired", "voided"] as const;
+export const LEDGER_STATUSES = [
+  "active",
+  "pending_verification",
+  "expired",
+  "voided",
+  "used",
+] as const;
 export type LedgerStatus = (typeof LEDGER_STATUSES)[number];
 export const MILESTONES = [500, 1000, 2500, 5000] as const;
 

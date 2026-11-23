@@ -109,6 +109,8 @@ export const leads = mysqlTable(
     claimedBy: ref("claimed_by"),
     claimedAt: opt("claimed_at"),
     outreachSentAt: opt("outreach_sent_at"),
+    outreachChannels: text("outreach_channels"),
+    outreachNotes: text("outreach_notes"),
     createdAt: created(),
     updatedAt: updated(),
   },

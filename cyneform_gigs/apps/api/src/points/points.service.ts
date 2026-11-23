@@ -45,6 +45,7 @@ export type AwardParams = {
   userId: string;
   ruleKey: string;
   leadId?: string;
+  crmEntryId?: string;
   note?: string;
   /** Admin-manual awards carry an actor; event-driven awards do not. */
   actor?: AuthUser;
@@ -177,6 +178,7 @@ export class PointsService {
         cashEquivalent: round2(points * kesPerPoint),
         status: result.status,
         leadId: p.leadId ?? null,
+        crmEntryId: p.crmEntryId ?? null,
         ruleVersionNo: result.version,
         verificationRequired: rule.verificationRequired,
         earnedAt: now,
@@ -239,6 +241,56 @@ export class PointsService {
       client: p.client,
     });
     return { awarded: result.points, status: result.status };
+  }
+
+  /** Voids quality points for one user's gig while preserving the point history. */
+  async voidForLead(
+    userId: string,
+    leadId: string,
+    ruleKeys: string[],
+    reason: string,
+    actor: AuthUser,
+    client?: ClientInfo,
+  ): Promise<number> {
+    const out = { points: 0, rows: 0 };
+    await this.db.transaction(async (tx) => {
+      await tx
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1)
+        .for("update");
+      const rows = await tx
+        .select({ id: pointsVault.id, points: pointsVault.points })
+        .from(pointsVault)
+        .where(
+          and(
+            eq(pointsVault.userId, userId),
+            eq(pointsVault.leadId, leadId),
+            inArray(pointsVault.ruleKey, ruleKeys),
+            inArray(pointsVault.status, ["active", "pending_verification"]),
+          ),
+        )
+        .for("update");
+      for (const r of rows) {
+        await tx
+          .update(pointsVault)
+          .set({ status: "voided", note: reason.slice(0, 500) })
+          .where(eq(pointsVault.id, r.id));
+        out.points = round2(out.points + r.points);
+      }
+      out.rows = rows.length;
+    });
+    if (out.rows)
+      await this.audit.record({
+        actor,
+        action: "points.voided",
+        targetType: "user",
+        targetId: userId,
+        details: { leadId, ruleKeys, points: out.points, reason },
+        client,
+      });
+    return out.points;
   }
 
   async verify(id: string, input: VerifyInput, actor: AuthUser, client?: ClientInfo) {

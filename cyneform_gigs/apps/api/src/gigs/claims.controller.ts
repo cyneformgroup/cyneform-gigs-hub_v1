@@ -1,7 +1,18 @@
-import { Controller, Get, HttpCode, Inject, Param, ParseUUIDPipe, Post, Req } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Inject,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Req,
+} from "@nestjs/common";
 import type { Request } from "express";
 import { type AuthUser, CurrentUser, RequirePermissions } from "../access/auth-user";
 import { clientInfo } from "../common/client-info";
+import type { OutreachDto } from "../crm/crm.dto";
 import { ClaimsService } from "./claims.service";
 
 @Controller("gigs")
@@ -27,13 +38,14 @@ export class ClaimsController {
 
   @RequirePermissions("gigs.claim")
   @Post(":id/outreach")
-  @HttpCode(204)
+  @HttpCode(200)
   outreach(
     @Param("id", ParseUUIDPipe) id: string,
+    @Body() dto: OutreachDto,
     @CurrentUser() actor: AuthUser,
     @Req() req: Request,
   ) {
-    return this.claims.markOutreachSent(id, actor, clientInfo(req));
+    return this.claims.markOutreachSent(id, dto, actor, clientInfo(req));
   }
 
   /** Owner or gigs.assign, enforced in the service. */

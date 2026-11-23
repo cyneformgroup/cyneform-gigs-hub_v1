@@ -131,3 +131,4 @@ pnpm-workspace.yaml
 
 # Runtime uploads (served by the API at /files/*)
 apps/api/files/
+apps/api/storage/
