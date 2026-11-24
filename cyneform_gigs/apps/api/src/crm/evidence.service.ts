@@ -5,13 +5,13 @@ import { join, resolve } from "node:path";
 import { and, count, crmEntries, crmFiles, eq } from "@cyneform/db";
 import { Inject, Injectable } from "@nestjs/common";
 import type { AuthUser } from "../access/auth-user";
-import type { AuditService } from "../audit/audit.service";
+import { AuditService } from "../audit/audit.service";
 import type { ClientInfo } from "../common/client-info";
 import { badRequest, notFound } from "../common/errors";
 import { env } from "../config/env";
 import { DB, type Db } from "../database/database.module";
-import type { PointsService } from "../points/points.service";
-import type { CrmService } from "./crm.service";
+import { PointsService } from "../points/points.service";
+import { CrmService } from "./crm.service";
 
 const MAX_BYTES = 10 * 1024 * 1024;
 const MAX_FILES = 10;
@@ -26,9 +26,9 @@ const ROOT = () => resolve(env.UPLOAD_DIR);
 export class EvidenceService {
   constructor(
     @Inject(DB) private readonly db: Db,
-    private readonly audit: AuditService,
-    private readonly crm: CrmService,
-    private readonly points: PointsService,
+    @Inject(AuditService) private readonly audit: AuditService,
+    @Inject(CrmService) private readonly crm: CrmService,
+    @Inject(PointsService) private readonly points: PointsService,
   ) {}
 
   async upload(

@@ -10,6 +10,8 @@ import { CompensationService } from "../compensation/compensation.service";
 import { env } from "../config/env";
 import { CrmService } from "../crm/crm.service";
 import { PointsService } from "../points/points.service";
+import { BonusService } from "../rewards/bonus.service";
+import { EquityService } from "../rewards/equity.service";
 import { ClaimsService } from "./claims.service";
 import { GigNotifier } from "./gig-notifier.service";
 
@@ -24,6 +26,8 @@ export class EventsConsumer implements OnModuleInit, OnModuleDestroy {
     @Inject(PointsService) private readonly points: PointsService,
     @Inject(CrmService) private readonly crm: CrmService,
     @Inject(CompensationService) private readonly compensation: CompensationService,
+    @Inject(BonusService) private readonly bonus: BonusService,
+    @Inject(EquityService) private readonly equity: EquityService,
   ) {}
 
   onModuleInit() {
@@ -42,6 +46,9 @@ export class EventsConsumer implements OnModuleInit, OnModuleDestroy {
         else if (e.type === "crm.followup") await this.crm.sendFollowup(e.entryId, e.n);
         else if (e.type === "compensation.expire") await this.compensation.expireRollover();
         else if (e.type === "points.expire") await this.points.expireDue();
+        else if (e.type === "bonus.check") await this.bonus.weeklyCheck();
+        else if (e.type === "bonus.process") await this.bonus.processQueued();
+        else if (e.type === "equity.daily") await this.equity.dailyVesting();
       },
       { connection: redisOptions(env.REDIS_URL, "worker"), concurrency: 1 },
     );

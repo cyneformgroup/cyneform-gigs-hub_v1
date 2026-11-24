@@ -192,6 +192,30 @@ export const PERMISSIONS = [
     description: "Approve and pay compensation, set elite cap",
     superAdminOnly: false,
   },
+  {
+    code: "bonus.view_all",
+    module: "bonus",
+    description: "View performance bonus candidates and decisions",
+    superAdminOnly: false,
+  },
+  {
+    code: "bonus.authorize",
+    module: "bonus",
+    description: "Authorize, decline or defer performance bonuses",
+    superAdminOnly: true,
+  },
+  {
+    code: "equity.view_all",
+    module: "equity",
+    description: "View phantom equity grants, milestones and payouts",
+    superAdminOnly: false,
+  },
+  {
+    code: "equity.manage",
+    module: "equity",
+    description: "Grant phantom equity and record valuation milestones",
+    superAdminOnly: true,
+  },
 ] as const;
 export type PermissionCode = (typeof PERMISSIONS)[number]["code"];
 
@@ -224,6 +248,8 @@ export const ROLE_DEFAULTS: Record<RoleCode, readonly PermissionCode[]> = {
     "crm.flag",
     "compensation.view_all",
     "compensation.manage",
+    "bonus.view_all",
+    "equity.view_all",
   ],
   bdp: [
     "leave.request",

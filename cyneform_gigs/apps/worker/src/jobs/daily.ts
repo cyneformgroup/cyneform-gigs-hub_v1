@@ -4,6 +4,8 @@ export const dailyTasks: { name: string; run: () => Promise<void> }[] = [
   { name: "points-expiry", run: () => emit({ type: "points.expire" }) },
   { name: "crm-reminders", run: () => emit({ type: "crm.reminders" }) },
   { name: "rollover-expiry", run: () => emit({ type: "compensation.expire" }) },
+  { name: "bonus-queue", run: () => emit({ type: "bonus.process" }) },
+  { name: "equity-vesting", run: () => emit({ type: "equity.daily" }) },
   // Phase 7+: reminders, inactivity...
 ];
 

@@ -6,5 +6,6 @@ export * from "./notifications/schema";
 export * from "./people/schema";
 export * from "./platform/schema";
 export * from "./points/schema";
+export * from "./rewards/schema";
 export * from "./settings/schema";
 export * from "./users/schema";

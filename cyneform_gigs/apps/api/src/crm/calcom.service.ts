@@ -1,13 +1,13 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { and, calcomEvents, crmEntries, eq, like, notInArray } from "@cyneform/db";
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import type { AuditService } from "../audit/audit.service";
+import { AuditService } from "../audit/audit.service";
 import { AppError } from "../common/errors";
 import { env } from "../config/env";
 import { DB, type Db } from "../database/database.module";
-import type { NotificationsService } from "../notifications/notifications.service";
-import type { PointsService } from "../points/points.service";
-import type { CrmService } from "./crm.service";
+import { NotificationsService } from "../notifications/notifications.service";
+import { PointsService } from "../points/points.service";
+import { CrmService } from "./crm.service";
 
 type Booking = {
   uid?: string;
@@ -22,10 +22,10 @@ export class CalcomService {
 
   constructor(
     @Inject(DB) private readonly db: Db,
-    private readonly audit: AuditService,
-    private readonly notifications: NotificationsService,
-    private readonly points: PointsService,
-    private readonly crm: CrmService,
+    @Inject(AuditService) private readonly audit: AuditService,
+    @Inject(NotificationsService) private readonly notifications: NotificationsService,
+    @Inject(PointsService) private readonly points: PointsService,
+    @Inject(CrmService) private readonly crm: CrmService,
   ) {}
 
   private verify(raw: Buffer, signature: string | undefined) {

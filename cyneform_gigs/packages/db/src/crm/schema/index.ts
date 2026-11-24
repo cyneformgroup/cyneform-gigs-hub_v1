@@ -3,6 +3,7 @@ import {
   boolean,
   char,
   datetime,
+  decimal,
   index,
   int,
   mysqlTable,
@@ -52,6 +53,7 @@ export const crmEntries = mysqlTable(
     flaggedBy: ref("flagged_by"),
     flagReason: varchar("flag_reason", { length: 500 }),
     closedProject: text("closed_project"),
+    estimatedValue: decimal("estimated_value", { precision: 14, scale: 2, mode: "number" }),
     createdAt: stamp("created_at"),
     updatedAt: datetime("updated_at", { fsp: 3 })
       .notNull()

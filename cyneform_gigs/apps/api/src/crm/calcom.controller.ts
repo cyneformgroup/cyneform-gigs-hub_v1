@@ -1,12 +1,12 @@
-import { Controller, Headers, HttpCode, Post, Req } from "@nestjs/common";
+import { Controller, Headers, HttpCode, Inject, Post, Req } from "@nestjs/common";
 import type { Request } from "express";
 import { Public } from "../access/auth-user"; // use the exact import your login routes use
 import { badRequest } from "../common/errors";
-import type { CalcomService } from "./calcom.service";
+import { CalcomService } from "./calcom.service";
 
 @Controller("webhooks")
 export class CalcomController {
-  constructor(private readonly calcom: CalcomService) {}
+  constructor(@Inject(CalcomService) private readonly calcom: CalcomService) {}
 
   /** Public: Cal.com has no session. Trust comes from the HMAC signature, checked before anything else. */
   @Public()

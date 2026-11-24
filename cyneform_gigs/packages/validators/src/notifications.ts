@@ -23,6 +23,12 @@ export const NOTIFICATION_TYPES = [
   "compensation.approved",
   "compensation.paid",
   "compensation.rollover_expired",
+  "bonus.candidate",
+  "bonus.decided",
+  "equity.granted",
+  "equity.vesting",
+  "equity.milestone",
+  "equity.payout",
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 

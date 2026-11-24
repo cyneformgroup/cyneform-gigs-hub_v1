@@ -36,13 +36,13 @@ import {
 } from "@cyneform/validators";
 import { Inject, Injectable, Logger, type OnModuleDestroy } from "@nestjs/common";
 import type { AuthUser } from "../access/auth-user";
-import type { AuditService } from "../audit/audit.service";
+import { AuditService } from "../audit/audit.service";
 import type { ClientInfo } from "../common/client-info";
 import { badRequest, notFound } from "../common/errors";
 import { env } from "../config/env";
 import { DB, type Db } from "../database/database.module";
-import type { NotificationsService } from "../notifications/notifications.service";
-import type { PointsService } from "../points/points.service";
+import { NotificationsService } from "../notifications/notifications.service";
+import { PointsService } from "../points/points.service";
 import { followupDates } from "./dates";
 
 export type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0];
@@ -69,9 +69,9 @@ export class CrmService implements OnModuleDestroy {
 
   constructor(
     @Inject(DB) private readonly db: Db,
-    private readonly audit: AuditService,
-    private readonly notifications: NotificationsService,
-    private readonly points: PointsService,
+    @Inject(AuditService) private readonly audit: AuditService,
+    @Inject(NotificationsService) private readonly notifications: NotificationsService,
+    @Inject(PointsService) private readonly points: PointsService,
   ) {}
 
   /** Called inside the outreach transaction (spec LH-002 step 10). Returns the new entry id. */
@@ -200,6 +200,7 @@ export class CrmService implements OnModuleDestroy {
     const statuses = json<string[]>(e.statuses, []);
     return {
       ...this.item(e, owner?.n ?? null),
+      estimatedValue: e.estimatedValue,
       description: e.eventDescription,
       decisionMakerName: e.decisionMakerName,
       jobTitle: e.jobTitle,
@@ -250,6 +251,7 @@ export class CrmService implements OnModuleDestroy {
     await this.db
       .update(crmEntries)
       .set({
+        ...(input.estimatedValue !== undefined ? { estimatedValue: input.estimatedValue } : {}),
         ...(input.clientType ? { clientType: input.clientType } : {}),
         ...(dm !== undefined ? { decisionMakerName: dm || null } : {}),
         ...(jt !== undefined ? { jobTitle: jt || null } : {}),

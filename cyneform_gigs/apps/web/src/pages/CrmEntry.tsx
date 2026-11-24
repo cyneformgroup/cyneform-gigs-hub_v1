@@ -126,6 +126,7 @@ export function CrmEntry() {
     };
     const body = {
       clientType: String(f.get("clientType") ?? "") || undefined,
+      estimatedValue: f.get("estimatedValue") ? Number(f.get("estimatedValue")) : undefined,
       decisionMakerName: String(f.get("decisionMakerName") ?? ""),
       jobTitle: String(f.get("jobTitle") ?? ""),
       contacts,
@@ -315,6 +316,18 @@ export function CrmEntry() {
             </div>
             {hint("channels")}
           </fieldset>
+          <label className="block text-sm">
+            Estimated deal value (KES, optional, counts toward your pipeline)
+            <input
+              name="estimatedValue"
+              type="number"
+              min="0"
+              step="0.01"
+              defaultValue={e.estimatedValue ?? ""}
+              disabled={!editable}
+              className={input}
+            />
+          </label>
           <label className="block text-sm">
             Notes
             <textarea

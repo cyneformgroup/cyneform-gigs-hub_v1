@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  Inject,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -20,15 +21,16 @@ import type { Request, Response } from "express";
 import { memoryStorage } from "multer";
 import { type AuthUser, CurrentUser, RequirePermissions } from "../access/auth-user";
 import { clientInfo } from "../common/client-info";
-import type { ChangeEntryStatusDto, EntryQueryDto, FlagEntryDto, UpdateEntryDto } from "./crm.dto";
-import type { CrmService } from "./crm.service";
-import type { EvidenceService } from "./evidence.service";
+// biome-ignore lint/style/useImportType: Nest needs runtime DTO constructors for Zod validation metadata.
+import { ChangeEntryStatusDto, EntryQueryDto, FlagEntryDto, UpdateEntryDto } from "./crm.dto";
+import { CrmService } from "./crm.service";
+import { EvidenceService } from "./evidence.service";
 
 @Controller("crm")
 export class CrmController {
   constructor(
-    private readonly crm: CrmService,
-    private readonly evidence: EvidenceService,
+    @Inject(CrmService) private readonly crm: CrmService,
+    @Inject(EvidenceService) private readonly evidence: EvidenceService,
   ) {}
 
   @RequirePermissions("crm.view_own")
