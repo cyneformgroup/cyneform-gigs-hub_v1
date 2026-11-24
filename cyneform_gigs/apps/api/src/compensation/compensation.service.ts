@@ -36,13 +36,13 @@ import type {
 import { calculateDealCompensation, tierFor } from "@cyneform/validators";
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import type { AuthUser } from "../access/auth-user";
-import type { AuditService } from "../audit/audit.service";
+import { AuditService } from "../audit/audit.service";
 import type { ClientInfo } from "../common/client-info";
 import { badRequest, notFound } from "../common/errors";
-import type { CrmService } from "../crm/crm.service";
+import { CrmService } from "../crm/crm.service";
 import { DB, type Db } from "../database/database.module";
-import type { NotificationsService } from "../notifications/notifications.service";
-import type { PointsService } from "../points/points.service";
+import { NotificationsService } from "../notifications/notifications.service";
+import { PointsService } from "../points/points.service";
 
 type Row = typeof dealCompensation.$inferSelect;
 const PAGE = 25;
@@ -63,10 +63,10 @@ export class CompensationService {
 
   constructor(
     @Inject(DB) private readonly db: Db,
-    private readonly audit: AuditService,
-    private readonly notifications: NotificationsService,
-    private readonly points: PointsService,
-    private readonly crm: CrmService,
+    @Inject(AuditService) private readonly audit: AuditService,
+    @Inject(NotificationsService) private readonly notifications: NotificationsService,
+    @Inject(PointsService) private readonly points: PointsService,
+    @Inject(CrmService) private readonly crm: CrmService,
   ) {}
 
   private async rules() {
@@ -259,6 +259,7 @@ export class CompensationService {
         month,
         ...calculation,
         clientPaymentStatus: input.clientPaymentStatus,
+        clientPaidAt: input.clientPaymentStatus === "fully_paid" ? now : null,
       });
       await tx
         .update(pointsVault)
@@ -544,7 +545,7 @@ export class CompensationService {
     await this.db.transaction(async (tx) => {
       const res = await tx
         .update(dealCompensation)
-        .set({ clientPaymentStatus: "fully_paid" })
+        .set({ clientPaymentStatus: "fully_paid", clientPaidAt: new Date() })
         .where(
           and(eq(dealCompensation.id, id), eq(dealCompensation.clientPaymentStatus, "not_paid")),
         );

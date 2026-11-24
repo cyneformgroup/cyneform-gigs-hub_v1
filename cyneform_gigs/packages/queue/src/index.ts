@@ -55,6 +55,9 @@ export type EventJob =
   | { type: "points.expire" }
   | { type: "crm.reminders" }
   | { type: "crm.followup"; entryId: string; n: 1 | 2 | 3 }
-  | { type: "compensation.expire" };
+  | { type: "compensation.expire" }
+  | { type: "bonus.check" }
+  | { type: "bonus.process" }
+  | { type: "equity.daily" };
 
 export { type Job, Worker } from "bullmq";

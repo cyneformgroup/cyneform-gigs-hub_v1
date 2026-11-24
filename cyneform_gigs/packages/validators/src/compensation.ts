@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const CLIENT_PAYMENT_STATUSES = ["fully_paid", "not_paid"] as const;
 export const PAYMENT_STATUSES = ["pending", "approved", "paid"] as const;
-export const ROLLOVER_STATUSES = ["active", "applied", "expired"] as const;
+export const ROLLOVER_STATUSES = ["active", "applied", "expired", "paid_out"] as const;
 
 const Money = z
   .number()

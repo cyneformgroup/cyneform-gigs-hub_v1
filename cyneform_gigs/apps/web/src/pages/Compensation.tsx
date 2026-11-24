@@ -7,6 +7,7 @@ import type {
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { DealBreakdown } from "../components/DealBreakdown";
+import { MyRewards } from "../components/MyRewards";
 import { Badge, Button, Card } from "../components/ui";
 import { api, messageOf } from "../lib/api";
 
@@ -135,6 +136,7 @@ export function Compensation() {
         </ul>
       </Card>
 
+      <MyRewards />
       {structure.data && (
         <Card>
           <h2 className="font-semibold">How it works</h2>

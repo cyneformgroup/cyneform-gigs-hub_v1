@@ -48,6 +48,7 @@ export const dealCompensation = mysqlTable(
     finalPayout: money("final_payout").notNull(),
     rolloverCreated: money("rollover_created").notNull(),
     clientPaymentStatus: varchar("client_payment_status", { length: 12 }).notNull(),
+    clientPaidAt: opt("client_paid_at"),
     paymentStatus: varchar("payment_status", { length: 12 }).notNull().default("pending"),
     approvedBy: ref("approved_by"),
     approvedAt: opt("approved_at"),

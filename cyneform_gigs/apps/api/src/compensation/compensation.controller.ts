@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  Inject,
   Param,
   ParseUUIDPipe,
   Post,
@@ -12,18 +13,19 @@ import {
 import type { Request } from "express";
 import { type AuthUser, CurrentUser, RequirePermissions } from "../access/auth-user";
 import { clientInfo } from "../common/client-info";
-import type {
+// biome-ignore lint/style/useImportType: Nest needs runtime DTO constructors for Zod validation metadata.
+import {
   ApproveDealDto,
   CloseDealDto,
   DealQueryDto,
   EliteDto,
   PayDealDto,
 } from "./compensation.dto";
-import type { CompensationService } from "./compensation.service";
+import { CompensationService } from "./compensation.service";
 
 @Controller("compensation")
 export class CompensationController {
-  constructor(private readonly comp: CompensationService) {}
+  constructor(@Inject(CompensationService) private readonly comp: CompensationService) {}
 
   @RequirePermissions("compensation.view_own")
   @Get("summary")

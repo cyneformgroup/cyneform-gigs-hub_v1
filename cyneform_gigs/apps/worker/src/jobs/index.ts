@@ -8,6 +8,7 @@ export const handlers: Record<string, () => Promise<void>> = {
   "daily-8am": daily,
   "sync-sources": syncSources,
   "claim-expiry": () => emit({ type: "claims.sweep" }),
+  "thursday-8am": () => emit({ type: "bonus.check" }),
 };
 
 export const schedules = [
@@ -15,4 +16,5 @@ export const schedules = [
   { id: "daily-8am", pattern: "0 8 * * *" }, // 8:00 AM EAT
   { id: "sync-sources", pattern: "*/15 * * * *" },
   { id: "claim-expiry", pattern: "*/5 * * * *" },
+  { id: "thursday-8am", pattern: "0 8 * * 4" }, // Thursdays 8:00 AM EAT
 ];

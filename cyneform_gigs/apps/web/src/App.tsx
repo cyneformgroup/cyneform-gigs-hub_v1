@@ -1,11 +1,13 @@
 import { Navigate, Route, Routes } from "react-router";
 import { Layout } from "./components/Layout";
 import { RequireAuth } from "./components/RequireAuth";
+import { BonusAdmin } from "./pages/BonusAdmin";
 import { Compensation } from "./pages/Compensation";
 import { CompensationAdmin } from "./pages/CompensationAdmin";
 import { CrmEntry } from "./pages/CrmEntry";
 import { CrmList } from "./pages/CrmList";
 import { Dashboard } from "./pages/Dashboard";
+import { EquityAdmin } from "./pages/EquityAdmin";
 import { ForgotPassword } from "./pages/ForgotPassword";
 import { Gigs } from "./pages/Gigs";
 import { Leave } from "./pages/Leave";
@@ -43,6 +45,12 @@ export default function App() {
           <Route path="crm/:id" element={<CrmEntry />} />
           <Route path="compensation" element={<Compensation />} />
           <Route path="compensation/admin" element={<CompensationAdmin />} />
+          <Route element={<RequireAuth permission="bonus.view_all" />}>
+            <Route path="rewards/bonus" element={<BonusAdmin />} />
+          </Route>
+          <Route element={<RequireAuth permission="equity.view_all" />}>
+            <Route path="rewards/equity" element={<EquityAdmin />} />
+          </Route>
           <Route element={<RequireAuth permission="points.view_own" />}>
             <Route path="points" element={<MyPoints />} />
           </Route>

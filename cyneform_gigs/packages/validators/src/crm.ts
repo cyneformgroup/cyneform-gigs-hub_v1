@@ -207,6 +207,7 @@ export function missingFields(e: CompletionInput): Record<string, string> {
 }
 
 export const UpdateEntrySchema = z.object({
+  estimatedValue: z.number().min(0).max(1_000_000_000).optional(),
   clientType: z.enum(CLIENT_TYPES).optional(),
   decisionMakerName: z.string().trim().max(255).optional(),
   jobTitle: z.string().trim().max(255).optional(),
@@ -259,6 +260,7 @@ export const EvidenceFileSchema = z.object({
   createdAt: z.string(),
 });
 export const EntryDetailSchema = EntryItemSchema.extend({
+  estimatedValue: z.number().nullable(),
   description: z.string().nullable(),
   decisionMakerName: z.string().nullable(),
   jobTitle: z.string().nullable(),
