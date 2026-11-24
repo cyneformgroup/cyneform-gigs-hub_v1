@@ -1,5 +1,6 @@
 export * from "./auth";
 export * from "./bonus";
+export * from "./calendar";
 export * from "./common";
 export * from "./compensation";
 export * from "./constants";
@@ -13,4 +14,6 @@ export * from "./permissions";
 export * from "./points";
 export * from "./settings";
 export * from "./sources";
+
+export * from "./training";
 export * from "./users";

@@ -6,6 +6,7 @@ import {
   type OnModuleDestroy,
   type OnModuleInit,
 } from "@nestjs/common";
+import { CalendarService } from "../calendar/calendar.service";
 import { CompensationService } from "../compensation/compensation.service";
 import { env } from "../config/env";
 import { CrmService } from "../crm/crm.service";
@@ -28,6 +29,7 @@ export class EventsConsumer implements OnModuleInit, OnModuleDestroy {
     @Inject(CompensationService) private readonly compensation: CompensationService,
     @Inject(BonusService) private readonly bonus: BonusService,
     @Inject(EquityService) private readonly equity: EquityService,
+    @Inject(CalendarService) private readonly calendar: CalendarService,
   ) {}
 
   onModuleInit() {
@@ -49,6 +51,7 @@ export class EventsConsumer implements OnModuleInit, OnModuleDestroy {
         else if (e.type === "bonus.check") await this.bonus.weeklyCheck();
         else if (e.type === "bonus.process") await this.bonus.processQueued();
         else if (e.type === "equity.daily") await this.equity.dailyVesting();
+        else if (e.type === "calendar.reminder") await this.calendar.remind(e.meetingId);
       },
       { connection: redisOptions(env.REDIS_URL, "worker"), concurrency: 1 },
     );

@@ -1,4 +1,5 @@
 export * from "./auth/schema";
+export * from "./calendar/schema";
 export * from "./compensation/schema";
 export * from "./crm/schema";
 export * from "./leads/schema";
@@ -8,4 +9,5 @@ export * from "./platform/schema";
 export * from "./points/schema";
 export * from "./rewards/schema";
 export * from "./settings/schema";
+export * from "./training/schema";
 export * from "./users/schema";

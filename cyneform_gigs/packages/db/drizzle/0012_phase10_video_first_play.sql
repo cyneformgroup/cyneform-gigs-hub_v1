@@ -1,0 +1,1 @@
+ALTER TABLE `training_views` ADD `played` boolean DEFAULT false NOT NULL;
