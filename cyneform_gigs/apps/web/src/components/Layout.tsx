@@ -17,6 +17,8 @@ const nav = [
   { to: "/settings", label: "Settings", end: false, any: ["settings.manage"] },
   { to: "/sources", label: "Sources", any: ["sources.view"] },
   { to: "/gigs", label: "Gigs", any: ["gigs.view"] },
+  { to: "/training", label: "Training", any: ["training.view"] },
+  { to: "/calendar", label: "Calendar", any: ["calendar.view"] },
   { to: "/crm", label: "CRM", any: ["crm.view_own", "crm.view_all"] },
   { to: "/compensation", label: "My compensation", end: true, any: ["compensation.view_own"] },
   { to: "/compensation/admin", label: "Compensation admin", any: ["compensation.view_all"] },

@@ -216,6 +216,30 @@ export const PERMISSIONS = [
     description: "Grant phantom equity and record valuation milestones",
     superAdminOnly: true,
   },
+  {
+    code: "training.view",
+    module: "training",
+    description: "View the training library",
+    superAdminOnly: false,
+  },
+  {
+    code: "training.manage",
+    module: "training",
+    description: "Upload and remove training files",
+    superAdminOnly: false,
+  },
+  {
+    code: "calendar.view",
+    module: "calendar",
+    description: "View my meetings and mark my attendance",
+    superAdminOnly: false,
+  },
+  {
+    code: "calendar.manage",
+    module: "calendar",
+    description: "Schedule meetings and mark anyone's attendance",
+    superAdminOnly: false,
+  },
 ] as const;
 export type PermissionCode = (typeof PERMISSIONS)[number]["code"];
 
@@ -250,6 +274,10 @@ export const ROLE_DEFAULTS: Record<RoleCode, readonly PermissionCode[]> = {
     "compensation.manage",
     "bonus.view_all",
     "equity.view_all",
+    "training.view",
+    "training.manage",
+    "calendar.view",
+    "calendar.manage",
   ],
   bdp: [
     "leave.request",
@@ -259,5 +287,7 @@ export const ROLE_DEFAULTS: Record<RoleCode, readonly PermissionCode[]> = {
     "crm.view_own",
     "crm.edit_own",
     "compensation.view_own",
+    "training.view",
+    "calendar.view",
   ],
 };

@@ -19,6 +19,7 @@ export {
 } from "drizzle-orm";
 export { mysqlEnum } from "drizzle-orm/mysql-core";
 export * from "./auth/schema";
+export * from "./calendar/schema";
 export type { Db } from "./client";
 export { db, pool } from "./client";
 export * from "./columns";
@@ -32,5 +33,6 @@ export * from "./points/schema";
 export * from "./rewards/schema";
 export * from "./settings";
 export * from "./settings/schema";
+export * from "./training/schema";
 export type { User } from "./users/schema";
 export * from "./users/schema";

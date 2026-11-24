@@ -58,6 +58,7 @@ export type EventJob =
   | { type: "compensation.expire" }
   | { type: "bonus.check" }
   | { type: "bonus.process" }
-  | { type: "equity.daily" };
+  | { type: "equity.daily" }
+  | { type: "calendar.reminder"; meetingId: string };
 
 export { type Job, Worker } from "bullmq";

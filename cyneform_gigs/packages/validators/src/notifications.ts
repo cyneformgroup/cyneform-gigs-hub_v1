@@ -29,6 +29,10 @@ export const NOTIFICATION_TYPES = [
   "equity.vesting",
   "equity.milestone",
   "equity.payout",
+  "training.new",
+  "calendar.invite",
+  "calendar.reminder",
+  "calendar.cancelled",
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 

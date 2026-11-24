@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router";
 import { Layout } from "./components/Layout";
 import { RequireAuth } from "./components/RequireAuth";
 import { BonusAdmin } from "./pages/BonusAdmin";
+import { Calendar } from "./pages/Calendar";
 import { Compensation } from "./pages/Compensation";
 import { CompensationAdmin } from "./pages/CompensationAdmin";
 import { CrmEntry } from "./pages/CrmEntry";
@@ -19,6 +20,7 @@ import { Profile } from "./pages/Profile";
 import { SetPassword } from "./pages/SetPassword";
 import { Settings } from "./pages/Settings";
 import { Sources } from "./pages/Sources";
+import { Training } from "./pages/Training";
 import { UserDetailPage } from "./pages/UserDetail";
 import { Users } from "./pages/Users";
 
@@ -41,6 +43,8 @@ export default function App() {
           <Route path="settings" element={<Settings />} />
           <Route path="sources" element={<Sources />} />
           <Route path="gigs" element={<Gigs />} />
+          <Route path="training" element={<Training />} />
+          <Route path="calendar" element={<Calendar />} />
           <Route path="crm" element={<CrmList />} />
           <Route path="crm/:id" element={<CrmEntry />} />
           <Route path="compensation" element={<Compensation />} />

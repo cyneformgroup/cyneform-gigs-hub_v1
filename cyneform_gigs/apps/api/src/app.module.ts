@@ -5,6 +5,7 @@ import { ZodValidationPipe } from "nestjs-zod";
 import { AccessModule } from "./access/access.module";
 import { AuditModule } from "./audit/audit.module";
 import { AuthModule } from "./auth/auth.module";
+import { CalendarModule } from "./calendar/calendar.module";
 import { ErrorFilter } from "./common/errors";
 import { CompensationModule } from "./compensation/compensation.module";
 import { CrmModule } from "./crm/crm.module";
@@ -18,6 +19,7 @@ import { PointsModule } from "./points/points.module";
 import { RewardsModule } from "./rewards/rewards.module";
 import { SettingsModule } from "./settings/settings.module";
 import { SourcesModule } from "./sources/sources.module";
+import { TrainingModule } from "./training/training.module";
 import { UsersModule } from "./users/users.module";
 
 @Module({
@@ -37,6 +39,8 @@ import { UsersModule } from "./users/users.module";
     GigsModule,
     CrmModule,
     CompensationModule,
+    TrainingModule,
+    CalendarModule,
     RewardsModule,
   ],
   controllers: [HealthController],

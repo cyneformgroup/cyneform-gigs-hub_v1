@@ -11,4 +11,5 @@ export type * from "./points";
 export type * from "./rewards";
 export type * from "./settings";
 export type * from "./sources";
+export type * from "./training";
 export type * from "./users";
