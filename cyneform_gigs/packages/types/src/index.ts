@@ -1,4 +1,5 @@
 export type * from "./auth";
+export type * from "./automation";
 export type * from "./common";
 export type * from "./compensation";
 export type * from "./crm";

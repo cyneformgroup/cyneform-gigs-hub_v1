@@ -1,4 +1,5 @@
 export * from "./auth";
+export * from "./automation";
 export * from "./bonus";
 export * from "./calendar";
 export * from "./common";

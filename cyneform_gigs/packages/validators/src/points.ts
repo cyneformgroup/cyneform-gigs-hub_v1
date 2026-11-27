@@ -107,6 +107,8 @@ export const LEDGER_STATUSES = [
   "expired",
   "voided",
   "used",
+  "reset",
+  "forfeited",
 ] as const;
 export type LedgerStatus = (typeof LEDGER_STATUSES)[number];
 export const MILESTONES = [500, 1000, 2500, 5000] as const;

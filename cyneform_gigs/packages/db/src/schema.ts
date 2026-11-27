@@ -1,4 +1,5 @@
 export * from "./auth/schema";
+export * from "./automation/schema";
 export * from "./calendar/schema";
 export * from "./compensation/schema";
 export * from "./crm/schema";
