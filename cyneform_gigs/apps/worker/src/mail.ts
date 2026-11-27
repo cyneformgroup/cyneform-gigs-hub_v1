@@ -49,6 +49,10 @@ export async function sendMail(job: Job<MailJob>) {
         subject: m.subject,
         text: m.text,
         html: m.html,
+        attachments: m.attachments?.map((a) => ({
+          filename: a.filename,
+          content: Buffer.from(a.contentBase64, "base64"),
+        })),
       });
     } else {
       console.log(

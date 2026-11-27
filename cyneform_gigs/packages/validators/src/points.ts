@@ -89,6 +89,7 @@ export const POINT_RULES: readonly PointRuleDef[] = [
   workflow("deal_lost", "Deal lost (effort recognition)", 5),
   workflow("meeting_attendance", "Meeting attendance marked", 5),
   workflow("training_completed", "Training completed", 3),
+  workflow("weekly_report", "On-time weekly report", 10),
 ];
 
 export const MANUAL_ADJUSTMENT = "manual_adjustment";

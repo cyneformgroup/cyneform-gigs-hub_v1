@@ -12,12 +12,24 @@ export class MailService implements OnModuleDestroy {
     to: string,
     subject: string,
     text: string,
-    extra: Pick<MailJob, "html" | "template"> = {},
+    extra: Pick<MailJob, "html" | "template"> & {
+      attachments?: { filename: string; content: Buffer }[];
+    } = {},
   ) {
     try {
       await this.queue.add(
         "send",
-        { to, subject, text, ...extra },
+        {
+          to,
+          subject,
+          text,
+          html: extra.html,
+          template: extra.template,
+          attachments: extra.attachments?.map((a) => ({
+            filename: a.filename,
+            contentBase64: a.content.toString("base64"),
+          })),
+        },
         {
           attempts: 5,
           backoff: { type: "exponential", delay: 5_000 },

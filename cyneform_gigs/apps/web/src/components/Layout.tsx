@@ -5,7 +5,9 @@ import { NotificationBell } from "./NotificationBell";
 import { Button } from "./ui";
 
 const nav = [
-  { to: "/", label: "Dashboard", end: true, any: [] as string[] },
+  { to: "/dashboard", label: "Dashboard", end: true, any: ["dashboard.view"] },
+  { to: "/reports", label: "Weekly report", end: true, any: ["reports.submit_own"] },
+  { to: "/reports/admin", label: "Reports", any: ["reports.view_all"] },
   { to: "/users", label: "Users", end: false, any: ["users.view"] },
   {
     to: "/leave",

@@ -12,6 +12,7 @@ export * from "./notifications";
 export * from "./people";
 export * from "./permissions";
 export * from "./points";
+export * from "./reports";
 export * from "./settings";
 export * from "./sources";
 

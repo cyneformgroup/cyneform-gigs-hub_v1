@@ -361,6 +361,16 @@ export const SETTINGS = [
     max: 30,
     default: 7,
   },
+  {
+    key: "reports.dashboard_idle_days",
+    group: "Reports",
+    label: "Flag BDPs who have not logged in for",
+    type: "number",
+    unit: "days",
+    min: 1,
+    max: 30,
+    default: 4,
+  },
 ] as const satisfies readonly SettingDef[];
 
 export type SettingKey = (typeof SETTINGS)[number]["key"];
