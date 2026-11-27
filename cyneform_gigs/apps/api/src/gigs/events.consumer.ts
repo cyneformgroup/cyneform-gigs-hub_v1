@@ -7,6 +7,7 @@ import {
   type OnModuleInit,
 } from "@nestjs/common";
 import { AccountsService } from "../automation/accounts.service";
+import { PrivacyService } from "../automation/privacy.service";
 import { LifecycleService } from "../automation/lifecycle.service";
 import { CalendarService } from "../calendar/calendar.service";
 import { CompensationService } from "../compensation/compensation.service";
@@ -36,6 +37,7 @@ export class EventsConsumer implements OnModuleInit, OnModuleDestroy {
     @Inject(ReportsService) private readonly reports: ReportsService,
     @Inject(LifecycleService) private readonly lifecycle: LifecycleService,
     @Inject(AccountsService) private readonly accounts: AccountsService,
+    @Inject(PrivacyService) private readonly privacy: PrivacyService,
   ) {}
 
   onModuleInit() {
@@ -64,6 +66,7 @@ export class EventsConsumer implements OnModuleInit, OnModuleDestroy {
         else if (e.type === "automation.vault") await this.lifecycle.vault();
         else if (e.type === "automation.leave") await this.lifecycle.leave();
         else if (e.type === "automation.anonymize") await this.accounts.anonymizeDue();
+        else if (e.type === "privacy.due") await this.privacy.dueReminders();
       },
       { connection: redisOptions(env.REDIS_URL, "worker"), concurrency: 1 },
     );

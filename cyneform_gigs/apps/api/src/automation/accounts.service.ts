@@ -23,14 +23,14 @@ import {
 import type { DeleteAccountInput, DeletePreview } from "@cyneform/types";
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import type { AuthUser } from "../access/auth-user";
-import type { AuditService } from "../audit/audit.service";
+import { AuditService } from "../audit/audit.service";
 import type { ClientInfo } from "../common/client-info";
 import { blindIndex, encrypt, storedEmail } from "../common/crypto";
 import { conflict, forbidden, notFound } from "../common/errors";
 import { DB, type Db } from "../database/database.module";
-import type { MailService } from "../mail/mail.service";
-import type { NotificationsService } from "../notifications/notifications.service";
-import type { LifecycleService, Tx } from "./lifecycle.service";
+import { MailService } from "../mail/mail.service";
+import { NotificationsService } from "../notifications/notifications.service";
+import { LifecycleService, type Tx } from "./lifecycle.service";
 
 const DAY = 86_400_000;
 const round2 = (n: number) => Math.round(n * 100) / 100;
@@ -41,10 +41,10 @@ export class AccountsService {
 
   constructor(
     @Inject(DB) private readonly db: Db,
-    private readonly lifecycle: LifecycleService,
-    private readonly audit: AuditService,
-    private readonly mail: MailService,
-    private readonly notifications: NotificationsService,
+    @Inject(LifecycleService) private readonly lifecycle: LifecycleService,
+    @Inject(AuditService) private readonly audit: AuditService,
+    @Inject(MailService) private readonly mail: MailService,
+    @Inject(NotificationsService) private readonly notifications: NotificationsService,
   ) {}
 
   async preview(userId: string): Promise<DeletePreview> {

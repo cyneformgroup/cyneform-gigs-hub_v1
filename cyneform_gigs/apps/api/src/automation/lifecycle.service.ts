@@ -19,11 +19,11 @@ import {
 import type { NotificationType } from "@cyneform/types";
 import { businessDaysSince } from "@cyneform/validators";
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import type { AuditService } from "../audit/audit.service";
+import { AuditService } from "../audit/audit.service";
 import { storedEmail } from "../common/crypto";
 import { DB, type Db } from "../database/database.module";
-import type { MailService } from "../mail/mail.service";
-import type { NotificationsService } from "../notifications/notifications.service";
+import { MailService } from "../mail/mail.service";
+import { NotificationsService } from "../notifications/notifications.service";
 
 export type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0];
 const DAY = 86_400_000;
@@ -35,9 +35,9 @@ export class LifecycleService {
 
   constructor(
     @Inject(DB) private readonly db: Db,
-    private readonly notifications: NotificationsService,
-    private readonly audit: AuditService,
-    private readonly mail: MailService,
+    @Inject(NotificationsService) private readonly notifications: NotificationsService,
+    @Inject(AuditService) private readonly audit: AuditService,
+    @Inject(MailService) private readonly mail: MailService,
   ) {}
 
   /** True the first time (userId, kind, anchor) is recorded. */

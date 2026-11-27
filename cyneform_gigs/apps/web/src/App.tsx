@@ -9,6 +9,7 @@ import { CompensationAdmin } from "./pages/CompensationAdmin";
 import { CrmEntry } from "./pages/CrmEntry";
 import { CrmList } from "./pages/CrmList";
 import { Dashboard } from "./pages/Dashboard";
+import { DataRequests } from "./pages/DataRequests";
 import { EquityAdmin } from "./pages/EquityAdmin";
 import { ForgotPassword } from "./pages/ForgotPassword";
 import { Gigs } from "./pages/Gigs";
@@ -17,6 +18,7 @@ import { Login } from "./pages/Login";
 import { MyPoints } from "./pages/MyPoints";
 import { PointsAdmin } from "./pages/PointsAdmin";
 import { PointsRules } from "./pages/PointsRules";
+import { Privacy } from "./pages/Privacy";
 import { Profile } from "./pages/Profile";
 import { ReportsAdmin } from "./pages/ReportsAdmin";
 import { SetPassword } from "./pages/SetPassword";
@@ -50,6 +52,12 @@ export default function App() {
           </Route>
           <Route element={<RequireAuth permission="reports.view_all" />}>
             <Route path="reports/admin" element={<ReportsAdmin />} />
+          </Route>
+          <Route element={<RequireAuth permission="privacy.self" />}>
+            <Route path="privacy" element={<Privacy />} />
+          </Route>
+          <Route element={<RequireAuth permission="privacy.manage" />}>
+            <Route path="privacy/requests" element={<DataRequests />} />
           </Route>
           <Route path="profile" element={<Profile />} />
           <Route path="leave" element={<Leave />} />
