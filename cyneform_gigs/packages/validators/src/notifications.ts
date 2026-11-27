@@ -33,6 +33,9 @@ export const NOTIFICATION_TYPES = [
   "calendar.invite",
   "calendar.reminder",
   "calendar.cancelled",
+  "report.reminder",
+  "report.overdue",
+  "report.submitted",
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 

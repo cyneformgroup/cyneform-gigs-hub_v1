@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router";
 import { Layout } from "./components/Layout";
 import { RequireAuth } from "./components/RequireAuth";
+import { useAuth } from "./lib/auth";
 import { BonusAdmin } from "./pages/BonusAdmin";
 import { Calendar } from "./pages/Calendar";
 import { Compensation } from "./pages/Compensation";
@@ -17,12 +18,19 @@ import { MyPoints } from "./pages/MyPoints";
 import { PointsAdmin } from "./pages/PointsAdmin";
 import { PointsRules } from "./pages/PointsRules";
 import { Profile } from "./pages/Profile";
+import { ReportsAdmin } from "./pages/ReportsAdmin";
 import { SetPassword } from "./pages/SetPassword";
 import { Settings } from "./pages/Settings";
 import { Sources } from "./pages/Sources";
 import { Training } from "./pages/Training";
 import { UserDetailPage } from "./pages/UserDetail";
 import { Users } from "./pages/Users";
+import { WeeklyReport } from "./pages/WeeklyReport";
+
+function HomeRedirect() {
+  const { can } = useAuth();
+  return <Navigate to={can("dashboard.view") ? "/dashboard" : "/reports"} replace />;
+}
 
 export default function App() {
   return (
@@ -33,7 +41,16 @@ export default function App() {
 
       <Route element={<RequireAuth />}>
         <Route element={<Layout />}>
-          <Route index element={<Dashboard />} />
+          <Route index element={<HomeRedirect />} />
+          <Route element={<RequireAuth permission="dashboard.view" />}>
+            <Route path="dashboard" element={<Dashboard />} />
+          </Route>
+          <Route element={<RequireAuth permission="reports.submit_own" />}>
+            <Route path="reports" element={<WeeklyReport />} />
+          </Route>
+          <Route element={<RequireAuth permission="reports.view_all" />}>
+            <Route path="reports/admin" element={<ReportsAdmin />} />
+          </Route>
           <Route path="profile" element={<Profile />} />
           <Route path="leave" element={<Leave />} />
           <Route element={<RequireAuth permission="users.view" />}>

@@ -11,6 +11,7 @@ import { CompensationService } from "../compensation/compensation.service";
 import { env } from "../config/env";
 import { CrmService } from "../crm/crm.service";
 import { PointsService } from "../points/points.service";
+import { ReportsService } from "../reports/reports.service";
 import { BonusService } from "../rewards/bonus.service";
 import { EquityService } from "../rewards/equity.service";
 import { ClaimsService } from "./claims.service";
@@ -30,6 +31,7 @@ export class EventsConsumer implements OnModuleInit, OnModuleDestroy {
     @Inject(BonusService) private readonly bonus: BonusService,
     @Inject(EquityService) private readonly equity: EquityService,
     @Inject(CalendarService) private readonly calendar: CalendarService,
+    @Inject(ReportsService) private readonly reports: ReportsService,
   ) {}
 
   onModuleInit() {
@@ -52,6 +54,8 @@ export class EventsConsumer implements OnModuleInit, OnModuleDestroy {
         else if (e.type === "bonus.process") await this.bonus.processQueued();
         else if (e.type === "equity.daily") await this.equity.dailyVesting();
         else if (e.type === "calendar.reminder") await this.calendar.remind(e.meetingId);
+        else if (e.type === "reports.remind") await this.reports.remind();
+        else if (e.type === "reports.overdue") await this.reports.overdue();
       },
       { connection: redisOptions(env.REDIS_URL, "worker"), concurrency: 1 },
     );

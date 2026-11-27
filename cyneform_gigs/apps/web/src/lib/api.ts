@@ -98,3 +98,7 @@ export async function api<T>(
   }
   return data as T;
 }
+
+export function apiBlob(path: string, method: Options["method"] = "GET"): Promise<Blob> {
+  return api<Blob>(path, { method, blob: true });
+}

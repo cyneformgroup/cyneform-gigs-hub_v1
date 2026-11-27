@@ -30,6 +30,7 @@ export * from "./notifications/schema";
 export * from "./people/schema";
 export * from "./platform/schema";
 export * from "./points/schema";
+export * from "./reports/schema";
 export * from "./rewards/schema";
 export * from "./settings";
 export * from "./settings/schema";

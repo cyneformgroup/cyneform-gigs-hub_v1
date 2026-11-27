@@ -16,6 +16,7 @@ import { LeaveModule } from "./leave/leave.module";
 import { MailModule } from "./mail/mail.module";
 import { NotificationsModule } from "./notifications/notifications.module";
 import { PointsModule } from "./points/points.module";
+import { ReportsModule } from "./reports/reports.module";
 import { RewardsModule } from "./rewards/rewards.module";
 import { SettingsModule } from "./settings/settings.module";
 import { SourcesModule } from "./sources/sources.module";
@@ -42,6 +43,7 @@ import { UsersModule } from "./users/users.module";
     TrainingModule,
     CalendarModule,
     RewardsModule,
+    ReportsModule,
   ],
   controllers: [HealthController],
   providers: [

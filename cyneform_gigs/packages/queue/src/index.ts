@@ -9,6 +9,7 @@ export type MailJob = {
   text: string;
   html?: string;
   template?: string;
+  attachments?: { filename: string; contentBase64: string }[];
 };
 
 /**
@@ -59,6 +60,8 @@ export type EventJob =
   | { type: "bonus.check" }
   | { type: "bonus.process" }
   | { type: "equity.daily" }
-  | { type: "calendar.reminder"; meetingId: string };
+  | { type: "calendar.reminder"; meetingId: string }
+  | { type: "reports.remind" }
+  | { type: "reports.overdue" };
 
 export { type Job, Worker } from "bullmq";

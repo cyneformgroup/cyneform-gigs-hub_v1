@@ -240,6 +240,24 @@ export const PERMISSIONS = [
     description: "Schedule meetings and mark anyone's attendance",
     superAdminOnly: false,
   },
+  {
+    code: "reports.submit_own",
+    module: "reports",
+    description: "Write and submit my weekly report",
+    superAdminOnly: false,
+  },
+  {
+    code: "reports.view_all",
+    module: "reports",
+    description: "View submitted reports and generate admin reports",
+    superAdminOnly: false,
+  },
+  {
+    code: "dashboard.view",
+    module: "dashboard",
+    description: "View the admin dashboard",
+    superAdminOnly: false,
+  },
 ] as const;
 export type PermissionCode = (typeof PERMISSIONS)[number]["code"];
 
@@ -278,6 +296,8 @@ export const ROLE_DEFAULTS: Record<RoleCode, readonly PermissionCode[]> = {
     "training.manage",
     "calendar.view",
     "calendar.manage",
+    "reports.view_all",
+    "dashboard.view",
   ],
   bdp: [
     "leave.request",
@@ -289,5 +309,6 @@ export const ROLE_DEFAULTS: Record<RoleCode, readonly PermissionCode[]> = {
     "compensation.view_own",
     "training.view",
     "calendar.view",
+    "reports.submit_own",
   ],
 };
