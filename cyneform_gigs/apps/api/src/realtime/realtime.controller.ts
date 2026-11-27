@@ -1,10 +1,10 @@
-import { Controller, Post } from "@nestjs/common";
+import { Controller, Inject, Post } from "@nestjs/common";
 import { type AuthUser, CurrentUser, RequirePermissions } from "../access/auth-user";
-import type { TicketService } from "./ticket.service";
+import { TicketService } from "./ticket.service";
 
 @Controller("realtime")
 export class RealtimeController {
-  constructor(private readonly tickets: TicketService) {}
+  constructor(@Inject(TicketService) private readonly tickets: TicketService) {}
 
   @RequirePermissions("privacy.self")
   @Post("ticket")
