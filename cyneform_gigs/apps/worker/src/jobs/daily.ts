@@ -6,6 +6,7 @@ export const dailyTasks: { name: string; run: () => Promise<void> }[] = [
   { name: "vault-reset", run: () => emit({ type: "automation.vault" }) },
   { name: "anonymize", run: () => emit({ type: "automation.anonymize" }) },
   { name: "data-requests-due", run: () => emit({ type: "privacy.due" }) },
+  { name: "operations-cleanup", run: () => emit({ type: "ops.cleanup" }) },
   { name: "points-expiry", run: () => emit({ type: "points.expire" }) },
   { name: "crm-reminders", run: () => emit({ type: "crm.reminders" }) },
   { name: "rollover-expiry", run: () => emit({ type: "compensation.expire" }) },
