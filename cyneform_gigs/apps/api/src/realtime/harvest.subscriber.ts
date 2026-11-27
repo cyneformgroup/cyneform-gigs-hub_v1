@@ -1,6 +1,12 @@
-import { Injectable, Logger, type OnModuleDestroy, type OnModuleInit } from "@nestjs/common";
+import {
+  Inject,
+  Injectable,
+  Logger,
+  type OnModuleDestroy,
+  type OnModuleInit,
+} from "@nestjs/common";
 import { Redis } from "ioredis";
-import type { RealtimeGateway } from "./realtime.gateway";
+import { RealtimeGateway } from "./realtime.gateway";
 
 export const HARVEST_CHANNEL = "harvest:events";
 
@@ -9,7 +15,7 @@ export class HarvestSubscriber implements OnModuleInit, OnModuleDestroy {
   private readonly log = new Logger(HarvestSubscriber.name);
   private sub: Redis | null = null;
 
-  constructor(private readonly gateway: RealtimeGateway) {}
+  constructor(@Inject(RealtimeGateway) private readonly gateway: RealtimeGateway) {}
 
   async onModuleInit() {
     this.sub = new Redis(process.env.REDIS_URL ?? "redis://localhost:6379");

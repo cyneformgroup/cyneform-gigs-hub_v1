@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-export const SOURCE_STRATEGIES = ["jsonld", "ical", "selectors"] as const;
+export const SOURCE_STRATEGIES = ["jsonld", "ical", "selectors", "browser", "adapter"] as const;
+export const SOURCE_ADAPTERS = ["json-api"] as const;
 export const SCHEDULE_PRESETS = {
   hourly: "0 * * * *",
   daily: "0 8 * * *",
@@ -28,6 +29,16 @@ const HttpsUrl = z
   .refine((u) => u.startsWith("https://"), "Use an https:// link");
 /** "css selector" or "css selector@attribute", e.g. "a.title@href" or "time@datetime". */
 const Sel = z.string().trim().min(1).max(300);
+const SelectorFields = z.object({
+  title: Sel,
+  link: Sel.optional(),
+  date: Sel.optional(),
+  venue: Sel.optional(),
+  description: Sel.optional(),
+  organizer: Sel.optional(),
+  price: Sel.optional(),
+  contact: Sel.optional(),
+});
 const Cron = z
   .string()
   .trim()
@@ -41,16 +52,28 @@ export const SourceConfigSchema = z.discriminatedUnion("strategy", [
     strategy: z.literal("selectors"),
     itemSelector: Sel,
     nextSelector: Sel.optional(),
-    fields: z.object({
-      title: Sel,
-      link: Sel.optional(),
-      date: Sel.optional(),
-      venue: Sel.optional(),
-      description: Sel.optional(),
-      organizer: Sel.optional(),
-      price: Sel.optional(),
-      contact: Sel.optional(),
-    }),
+    fields: SelectorFields,
+  }),
+  z.object({
+    strategy: z.literal("browser"),
+    itemSelector: Sel,
+    nextSelector: Sel.optional(),
+    waitFor: Sel.optional(),
+    scrolls: z.number().int().min(0).max(10).default(0),
+    fields: SelectorFields,
+  }),
+  z.object({
+    strategy: z.literal("adapter"),
+    adapter: z
+      .string()
+      .trim()
+      .min(2)
+      .max(40)
+      .regex(/^[a-z0-9-]+$/, "Lowercase letters, numbers and dashes"),
+    params: z
+      .record(z.string().max(60), z.string().max(300))
+      .refine((o) => Object.keys(o).length <= 20, "At most 20 settings")
+      .default({}),
   }),
 ]);
 export type SourceConfig = z.infer<typeof SourceConfigSchema>;

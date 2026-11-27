@@ -8,6 +8,7 @@ import {
 } from "@nestjs/common";
 import type { Response } from "express";
 import { ZodValidationException } from "nestjs-zod";
+import { captureServerError } from "./sentry";
 
 export class AppError extends HttpException {
   constructor(
@@ -32,7 +33,15 @@ export class ErrorFilter implements ExceptionFilter {
   private readonly log = new Logger("Errors");
 
   catch(exception: unknown, host: ArgumentsHost) {
-    const res = host.switchToHttp().getResponse<Response>();
+    const http = host.switchToHttp();
+    const req = http.getRequest<{
+      user?: { id?: string };
+      method?: string;
+      route?: { path?: unknown };
+    }>();
+    const res = http.getResponse<Response>();
+    const route = typeof req.route?.path === "string" ? req.route.path : "<unmatched>";
+    captureServerError(exception, { userId: req.user?.id, method: req.method, path: route });
     let status = 500;
     let body: ApiErrorBody = {
       error: { code: "INTERNAL_ERROR", message: "Something went wrong." },

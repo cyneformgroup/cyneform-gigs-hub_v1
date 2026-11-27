@@ -1,5 +1,10 @@
 import type { PreviewResult, SourceItem } from "@cyneform/types";
-import { SCHEDULE_PRESETS, SOURCE_STRATEGIES, SourceInputSchema } from "@cyneform/validators";
+import {
+  SCHEDULE_PRESETS,
+  SOURCE_ADAPTERS,
+  SOURCE_STRATEGIES,
+  SourceInputSchema,
+} from "@cyneform/validators";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { api, messageOf } from "../../lib/api";
@@ -18,26 +23,40 @@ function buildInput(f: FormData, strategy: string, schedule: string): Record<str
       .split(sep)
       .map((x) => x.trim())
       .filter(Boolean);
-  const config =
-    strategy === "jsonld"
-      ? { strategy, linkSelector: s("linkSelector") }
-      : strategy === "ical"
-        ? { strategy }
-        : {
-            strategy,
-            itemSelector: s("itemSelector"),
-            nextSelector: s("nextSelector"),
-            fields: {
-              title: s("f.title"),
-              link: s("f.link"),
-              date: s("f.date"),
-              venue: s("f.venue"),
-              description: s("f.description"),
-              organizer: s("f.organizer"),
-              price: s("f.price"),
-              contact: s("f.contact"),
-            },
-          };
+  const selectorFields = {
+    title: s("f.title"),
+    link: s("f.link"),
+    date: s("f.date"),
+    venue: s("f.venue"),
+    description: s("f.description"),
+    organizer: s("f.organizer"),
+    price: s("f.price"),
+    contact: s("f.contact"),
+  };
+  let config: Record<string, unknown>;
+  if (strategy === "jsonld") {
+    config = { strategy, linkSelector: s("linkSelector") };
+  } else if (strategy === "ical") {
+    config = { strategy };
+  } else if (strategy === "adapter") {
+    let params: unknown;
+    try {
+      params = JSON.parse(String(f.get("adapterParams") ?? "{}"));
+    } catch {
+      params = { __invalid_json__: 1 };
+    }
+    config = { strategy, adapter: s("adapter") ?? "json-api", params };
+  } else {
+    config = {
+      strategy,
+      itemSelector: s("itemSelector"),
+      nextSelector: s("nextSelector"),
+      ...(strategy === "browser"
+        ? { waitFor: s("waitFor"), scrolls: Number(s("scrolls") ?? 0) }
+        : {}),
+      fields: selectorFields,
+    };
+  }
   return {
     name: s("name") ?? "",
     startUrls: list("startUrls", /\s+/),
@@ -66,8 +85,12 @@ export function SourceForm({ initial, onDone }: { initial?: SourceItem; onDone: 
   const [schedule, setSchedule] = useState(presetOf(initial?.schedule ?? null));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [preview, setPreview] = useState<PreviewResult | null>(null);
-  const sel = initial?.config.strategy === "selectors" ? initial.config : undefined;
+  const sel =
+    initial?.config.strategy === "selectors" || initial?.config.strategy === "browser"
+      ? initial.config
+      : undefined;
   const jl = initial?.config.strategy === "jsonld" ? initial.config : undefined;
+  const adapterCfg = initial?.config.strategy === "adapter" ? initial.config : undefined;
   const err = (k: string) =>
     Object.entries(errors).find(([p]) => p === k || p.startsWith(`${k}.`))?.[1];
 
@@ -104,7 +127,7 @@ export function SourceForm({ initial, onDone }: { initial?: SourceItem; onDone: 
       key={key}
       label={label}
       name={`f.${key}`}
-      defaultValue={sel?.fields[key as "title"]}
+      defaultValue={sel?.fields[key as keyof typeof sel.fields]}
       error={err(`config.fields.${key}`)}
       hint={hint}
     />
@@ -148,7 +171,7 @@ export function SourceForm({ initial, onDone }: { initial?: SourceItem; onDone: 
           label="Extraction method"
           value={strategy}
           onChange={(e) => setStrategy(e.target.value)}
-          hint="jsonld = structured data, ical = calendar feed, selectors = CSS"
+          hint="jsonld = structured data, ical = calendar feed, selectors = CSS, browser = JavaScript pages, adapter = JSON feeds"
         >
           {SOURCE_STRATEGIES.map((s) => (
             <option key={s} value={s}>
@@ -165,7 +188,7 @@ export function SourceForm({ initial, onDone }: { initial?: SourceItem; onDone: 
             error={err("config.linkSelector")}
           />
         )}
-        {strategy === "selectors" && (
+        {strategy === "selectors" || strategy === "browser" ? (
           <>
             <Field
               label="Item selector"
@@ -174,6 +197,30 @@ export function SourceForm({ initial, onDone }: { initial?: SourceItem; onDone: 
               error={err("config.itemSelector")}
               hint="One match per event card"
             />
+            {strategy === "browser" && (
+              <>
+                <Field
+                  label="Wait for selector (optional)"
+                  name="waitFor"
+                  defaultValue={
+                    initial?.config.strategy === "browser" ? (initial.config.waitFor ?? "") : ""
+                  }
+                  hint="The page displays this selector after JavaScript runs"
+                />
+                <Field
+                  label="Scroll down times"
+                  name="scrolls"
+                  type="number"
+                  min={0}
+                  max={10}
+                  defaultValue={initial?.config.strategy === "browser" ? initial.config.scrolls : 0}
+                />
+                <p className="text-xs text-slate-500 sm:col-span-2">
+                  Use only when events appear after JavaScript loads. Item and field selectors are
+                  shared with the selectors method.
+                </p>
+              </>
+            )}
             <Field
               label="Next page selector (optional)"
               name="nextSelector"
@@ -188,6 +235,37 @@ export function SourceForm({ initial, onDone }: { initial?: SourceItem; onDone: 
             {fieldRow("organizer", "Organizer selector")}
             {fieldRow("price", "Price selector")}
             {fieldRow("contact", "Contact selector")}
+          </>
+        ) : null}
+        {strategy === "adapter" && (
+          <>
+            <SelectField
+              label="Adapter"
+              name="adapter"
+              defaultValue={adapterCfg?.adapter ?? SOURCE_ADAPTERS[0]}
+            >
+              {SOURCE_ADAPTERS.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </SelectField>
+            <label className="block text-sm sm:col-span-2">
+              Adapter settings (JSON, text values only)
+              <textarea
+                name="adapterParams"
+                rows={8}
+                className={`${area} mt-1 font-mono text-xs`}
+                defaultValue={JSON.stringify(adapterCfg?.params ?? {}, null, 2)}
+              />
+              <span className="mt-1 block text-xs text-slate-500">
+                json-api example:{" "}
+                {`{"itemsPath":"data.events","title":"name","url":"link","date":"start","venue":"place.name"}`}
+              </span>
+              {err("config.params") && (
+                <span className="mt-1 block text-xs text-red-600">{err("config.params")}</span>
+              )}
+            </label>
           </>
         )}
 

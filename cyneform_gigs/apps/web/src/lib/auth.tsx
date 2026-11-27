@@ -1,4 +1,5 @@
 import type { AuthSession, LoginResponse, SessionUser } from "@cyneform/types";
+import * as Sentry from "@sentry/react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   createContext,
@@ -34,6 +35,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!session) {
         setAccessToken(null);
         queryClient.clear();
+        Sentry.setUser(null);
+      } else {
+        Sentry.setUser({ id: session.user.id });
       }
       setUser(session?.user ?? null);
       setStatus(session ? "authenticated" : "anonymous");

@@ -26,6 +26,7 @@
     "@nestjs/platform-socket.io": "^12.6.3",
     "@nestjs/throttler": "^6.7.1",
     "@nestjs/websockets": "^12.6.3",
+    "@sentry/bun": "^11.19.0",
     "argon2": "^0.45.1",
     "cookie-parser": "^1.4.7",
     "croner": "^9.1.0",

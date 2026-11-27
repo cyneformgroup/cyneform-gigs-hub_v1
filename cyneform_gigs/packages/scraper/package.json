@@ -19,6 +19,7 @@
     "@cyneform/validators": "workspace:*",
     "cheerio": "^1.0.0",
     "crawlee": "^3.13.0",
+    "playwright-core": "^1.65.1",
     "robots-parser": "^3.0.1"
   }
 }

@@ -1,7 +1,7 @@
-import { Logger } from "@nestjs/common";
+import { Inject, Logger } from "@nestjs/common";
 import { type OnGatewayConnection, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import type { Server, Socket } from "socket.io";
-import type { TicketService } from "./ticket.service";
+import { TicketService } from "./ticket.service";
 
 @WebSocketGateway({
   path: "/socket.io",
@@ -12,7 +12,7 @@ export class RealtimeGateway implements OnGatewayConnection {
   private readonly log = new Logger(RealtimeGateway.name);
   @WebSocketServer() server!: Server;
 
-  constructor(private readonly tickets: TicketService) {}
+  constructor(@Inject(TicketService) private readonly tickets: TicketService) {}
 
   async handleConnection(client: Socket) {
     const t = client.handshake.auth?.ticket;

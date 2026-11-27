@@ -1,3 +1,4 @@
+import "./instrument";
 import { type MailJob, QUEUES, redisOptions, type ScrapeJob } from "@cyneform/queue";
 import { Worker } from "bullmq";
 import { registerSchedules, runCron } from "./cron";
@@ -5,6 +6,7 @@ import { env } from "./env";
 import { processScrape } from "./jobs/scrape";
 import { syncSources } from "./jobs/sync-sources";
 import { sendMail } from "./mail";
+import { attachSentry } from "./sentry";
 
 const connection = redisOptions(env.REDIS_URL, "worker");
 
@@ -20,6 +22,8 @@ const scrapeWorker = new Worker<ScrapeJob>(QUEUES.scrape, processScrape, {
   connection,
   concurrency: 2,
 });
+
+for (const worker of [mailWorker, cronWorker, scrapeWorker]) attachSentry(worker);
 
 for (const w of [mailWorker, cronWorker, scrapeWorker]) {
   w.on("failed", (job, err) => console.error(`[${w.name}] job ${job?.id} failed: ${err.message}`));

@@ -13,6 +13,7 @@
   "dependencies": {
     "@cyneform/types": "workspace:*",
     "@cyneform/validators": "workspace:*",
+    "@sentry/react": "^11.19.0",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/react-query": "^5.0.0",
     "react": "^19.3.1",

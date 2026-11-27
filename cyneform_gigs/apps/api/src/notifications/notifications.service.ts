@@ -1,7 +1,7 @@
 import { and, db, desc, eq, inArray, isNull, notifications, roles, sql, users } from "@cyneform/db";
 import type { NotificationPage, NotificationType, RoleCode } from "@cyneform/types";
-import { Injectable, Optional } from "@nestjs/common";
-import type { RealtimeGateway } from "../realtime/realtime.gateway";
+import { Inject, Injectable, Optional } from "@nestjs/common";
+import { RealtimeGateway } from "../realtime/realtime.gateway";
 
 type NewNotification = {
   type: NotificationType;
@@ -12,7 +12,7 @@ type NewNotification = {
 
 @Injectable()
 export class NotificationsService {
-  constructor(@Optional() private readonly realtime?: RealtimeGateway) {}
+  constructor(@Optional() @Inject(RealtimeGateway) private readonly realtime?: RealtimeGateway) {}
 
   async notify(userId: string, n: NewNotification) {
     await db.insert(notifications).values({
