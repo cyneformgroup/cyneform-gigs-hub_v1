@@ -1,4 +1,3 @@
-import type { SourceConfig } from "@cyneform/validators";
 import * as cheerio from "cheerio";
 
 export type RawGig = {
@@ -107,7 +106,20 @@ function pick(scope: Json, spec: string | undefined, base: string): string | und
 export function extractSelectors(
   html: string,
   pageUrl: string,
-  cfg: Extract<SourceConfig, { strategy: "selectors" }>,
+  cfg: {
+    itemSelector: string;
+    nextSelector?: string;
+    fields: {
+      title: string;
+      link?: string;
+      date?: string;
+      venue?: string;
+      description?: string;
+      organizer?: string;
+      price?: string;
+      contact?: string;
+    };
+  },
 ) {
   const $ = cheerio.load(html);
   const f = cfg.fields;

@@ -1,9 +1,33 @@
+import { ADAPTERS } from "./adapters";
+import { crawlBrowser } from "./browser";
 import { crawl } from "./crawl";
 import { filterGig, fingerprint, normalize } from "./normalize";
 import type { Found, SourceSpec, Tuning } from "./types";
 
 export async function runSource(spec: SourceSpec, t: Tuning) {
-  const c = await crawl(spec.startUrls, spec.config, t);
+  const cfg = spec.config;
+  const c =
+    cfg.strategy === "browser"
+      ? await crawlBrowser(spec.startUrls, cfg, t)
+      : cfg.strategy === "adapter"
+        ? await (ADAPTERS[cfg.adapter]?.({
+            startUrls: spec.startUrls,
+            params: cfg.params,
+            tuning: t,
+          }) ??
+            Promise.resolve({
+              raws: [],
+              pages: 0,
+              errors: [
+                {
+                  url: spec.startUrls[0] ?? "",
+                  stage: "parse" as const,
+                  message: `Unknown adapter "${cfg.adapter}"`,
+                },
+              ],
+              blocked: false,
+            }))
+        : await crawl(spec.startUrls, cfg, t);
   const seen = new Set<string>();
   const gigs: Found[] = [];
   const rejected: { title: string; reason: string }[] = [];

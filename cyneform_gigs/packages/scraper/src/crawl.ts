@@ -12,7 +12,11 @@ const sameHost = (a: string, b: string) => {
   }
 };
 
-export async function crawl(startUrls: string[], cfg: SourceConfig, t: Tuning) {
+export async function crawl(
+  startUrls: string[],
+  cfg: Exclude<SourceConfig, { strategy: "browser" | "adapter" }>,
+  t: Tuning,
+) {
   const raws: RawGig[] = [];
   const errors: CrawlError[] = [];
   let pages = 0;
@@ -66,7 +70,7 @@ export async function crawl(startUrls: string[], cfg: SourceConfig, t: Tuning) {
             const links = collectLinks(text, url, cfg.linkSelector).filter((l) => sameHost(l, url));
             await addRequests(links.slice(0, t.maxPages).map((u) => ({ url: u, label: "detail" })));
           }
-        } else {
+        } else if (cfg.strategy === "selectors") {
           const { items, next } = extractSelectors(text, url, cfg);
           raws.push(...items);
           if (next && sameHost(next, url) && pages < t.maxPages)

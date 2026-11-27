@@ -8,6 +8,7 @@ services:
       MARIADB_USER: ${DB_USER:?set DB_USER}
       MARIADB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
       TZ: Africa/Nairobi
+      UPLOAD_DIR: /app/uploads
     volumes:
       [dbdata:/var/lib/mysql, ./scripts:/scripts:ro, ./backups:/backups, uploads:/app/uploads]
     healthcheck:
@@ -27,7 +28,7 @@ services:
     build: { context: ., dockerfile: Dockerfile.api }
     restart: unless-stopped
     env_file: .env
-    environment: { TZ: Africa/Nairobi, UPLOAD_DIR: /app/storage }
+    environment: { TZ: Africa/Nairobi, UPLOAD_DIR: /app/storage, REDIS_URL: redis://redis:6379 }
     depends_on: { db: { condition: service_healthy }, redis: { condition: service_healthy } }
     volumes: [uploads:/app/storage]
     healthcheck:
@@ -44,7 +45,7 @@ services:
     build: { context: ., dockerfile: Dockerfile.worker }
     restart: unless-stopped
     env_file: .env
-    environment: { TZ: Africa/Nairobi, UPLOAD_DIR: /app/storage }
+    environment: { TZ: Africa/Nairobi, UPLOAD_DIR: /app/storage, REDIS_URL: redis://redis:6379 }
     depends_on: { api: { condition: service_healthy } }
     volumes: [uploads:/app/storage]
   web:

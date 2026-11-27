@@ -13,4 +13,4 @@ Set these values independently for API and worker containers. Inside production 
 | `SENTRY_DSN`, `VITE_SENTRY_DSN`                                       | Optional API/worker and browser Sentry DSNs.                                       |
 | `NODE_ENV`                                                            | Set to `production`.                                                               |
 
-Run database migrations once per release. Schedule `scripts/backup.sh` nightly and copy backups off-host weekly. Perform a restore drill into a scratch database monthly.
+Run database migrations once per release. Schedule `scripts/backup.sh` nightly (set `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `BACKUP_DIR=/backups`, and `UPLOAD_DIR=/app/uploads` in the database container) and copy backups off-host weekly. Perform a restore drill into a scratch database monthly.
