@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { AutomationModule } from "../automation/automation.module";
 import { CalendarModule } from "../calendar/calendar.module";
 import { CompensationModule } from "../compensation/compensation.module";
 import { CrmModule } from "../crm/crm.module";
@@ -21,6 +22,7 @@ import { GigsService } from "./gigs.service";
     CompensationModule,
     RewardsModule,
     CalendarModule,
+    AutomationModule,
     ReportsModule,
   ],
   controllers: [GigsController, ClaimsController],

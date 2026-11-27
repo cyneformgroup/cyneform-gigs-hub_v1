@@ -5,6 +5,7 @@ import { ZodValidationPipe } from "nestjs-zod";
 import { AccessModule } from "./access/access.module";
 import { AuditModule } from "./audit/audit.module";
 import { AuthModule } from "./auth/auth.module";
+import { AutomationModule } from "./automation/automation.module";
 import { CalendarModule } from "./calendar/calendar.module";
 import { ErrorFilter } from "./common/errors";
 import { CompensationModule } from "./compensation/compensation.module";
@@ -30,6 +31,7 @@ import { UsersModule } from "./users/users.module";
     AuditModule,
     MailModule,
     AccessModule,
+    AutomationModule,
     AuthModule,
     UsersModule,
     LeaveModule,
