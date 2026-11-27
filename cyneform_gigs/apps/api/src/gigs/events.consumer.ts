@@ -6,6 +6,10 @@ import {
   type OnModuleDestroy,
   type OnModuleInit,
 } from "@nestjs/common";
+import { AccountsService } from "../automation/accounts.service";
+import { LifecycleService } from "../automation/lifecycle.service";
+import { OpsService } from "../automation/ops.service";
+import { PrivacyService } from "../automation/privacy.service";
 import { CalendarService } from "../calendar/calendar.service";
 import { CompensationService } from "../compensation/compensation.service";
 import { env } from "../config/env";
@@ -32,6 +36,10 @@ export class EventsConsumer implements OnModuleInit, OnModuleDestroy {
     @Inject(EquityService) private readonly equity: EquityService,
     @Inject(CalendarService) private readonly calendar: CalendarService,
     @Inject(ReportsService) private readonly reports: ReportsService,
+    @Inject(LifecycleService) private readonly lifecycle: LifecycleService,
+    @Inject(AccountsService) private readonly accounts: AccountsService,
+    @Inject(PrivacyService) private readonly privacy: PrivacyService,
+    @Inject(OpsService) private readonly ops: OpsService,
   ) {}
 
   onModuleInit() {
@@ -56,6 +64,12 @@ export class EventsConsumer implements OnModuleInit, OnModuleDestroy {
         else if (e.type === "calendar.reminder") await this.calendar.remind(e.meetingId);
         else if (e.type === "reports.remind") await this.reports.remind();
         else if (e.type === "reports.overdue") await this.reports.overdue();
+        else if (e.type === "automation.inactivity") await this.lifecycle.inactivity();
+        else if (e.type === "automation.vault") await this.lifecycle.vault();
+        else if (e.type === "automation.leave") await this.lifecycle.leave();
+        else if (e.type === "automation.anonymize") await this.accounts.anonymizeDue();
+        else if (e.type === "privacy.due") await this.privacy.dueReminders();
+        else if (e.type === "ops.cleanup") await this.ops.cleanup();
       },
       { connection: redisOptions(env.REDIS_URL, "worker"), concurrency: 1 },
     );

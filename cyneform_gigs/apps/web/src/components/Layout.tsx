@@ -1,5 +1,7 @@
 import { NavLink, Outlet, useNavigate } from "react-router";
 import { useAuth } from "../lib/auth";
+import { closeSocket } from "../lib/realtime";
+import { useLiveNotifications } from "../lib/useLive";
 import { ClaimBlock } from "./ClaimBlock";
 import { NotificationBell } from "./NotificationBell";
 import { Button } from "./ui";
@@ -8,6 +10,8 @@ const nav = [
   { to: "/dashboard", label: "Dashboard", end: true, any: ["dashboard.view"] },
   { to: "/reports", label: "Weekly report", end: true, any: ["reports.submit_own"] },
   { to: "/reports/admin", label: "Reports", any: ["reports.view_all"] },
+  { to: "/privacy", label: "Privacy", any: ["privacy.self"] },
+  { to: "/privacy/requests", label: "Data requests", any: ["privacy.manage"] },
   { to: "/users", label: "Users", end: false, any: ["users.view"] },
   {
     to: "/leave",
@@ -32,11 +36,13 @@ const nav = [
 ];
 
 export function Layout() {
+  useLiveNotifications();
   const { user, can, logout } = useAuth();
   const navigate = useNavigate();
 
   async function signOut() {
     await logout();
+    closeSocket();
     navigate("/login", { replace: true });
   }
 

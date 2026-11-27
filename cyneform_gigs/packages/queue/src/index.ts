@@ -62,6 +62,12 @@ export type EventJob =
   | { type: "equity.daily" }
   | { type: "calendar.reminder"; meetingId: string }
   | { type: "reports.remind" }
-  | { type: "reports.overdue" };
+  | { type: "reports.overdue" }
+  | { type: "automation.inactivity" }
+  | { type: "automation.vault" }
+  | { type: "automation.leave" }
+  | { type: "automation.anonymize" }
+  | { type: "ops.cleanup" }
+  | { type: "privacy.due" };
 
 export { type Job, Worker } from "bullmq";

@@ -2,7 +2,8 @@ import type { SetOverridesInput, UserDetail } from "@cyneform/types";
 import { PERMISSIONS, ROLE_DEFAULTS, SetOverridesSchema } from "@cyneform/validators";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Link, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
+import { DeleteAccountModal } from "../components/DeleteAccountModal";
 import { Alert, Badge, Button, Card, Field, PageHeader } from "../components/ui";
 import { ProfileForm } from "../components/users/ProfileForm";
 import { StatusPanel } from "../components/users/StatusPanel";
@@ -101,6 +102,8 @@ export function UserDetailPage() {
   const { id = "" } = useParams();
   const { user: me, can } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const [deleting, setDeleting] = useState(false);
 
   const {
     data: user,
@@ -173,7 +176,26 @@ export function UserDetailPage() {
 
       {can("users.edit") && <ProfileForm key={`profile-${user.id}`} user={user} />}
       <StatusPanel key={`status-${user.id}`} user={user} />
+      {can("users.delete") && (
+        <div className="mt-4 flex justify-end">
+          <Button variant="danger" onClick={() => setDeleting(true)}>
+            Delete account
+          </Button>
+        </div>
+      )}
       {editable && <PermissionEditor key={user.id} user={user} />}
+      {deleting && (
+        <DeleteAccountModal
+          userId={user.id}
+          name={user.fullName}
+          onClose={() => setDeleting(false)}
+          onDone={() => {
+            setDeleting(false);
+            void queryClient.invalidateQueries({ queryKey: ["users"] });
+            navigate("/users", { replace: true });
+          }}
+        />
+      )}
     </>
   );
 }

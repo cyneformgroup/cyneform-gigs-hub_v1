@@ -1,6 +1,7 @@
 import { and, db, desc, eq, inArray, isNull, notifications, roles, sql, users } from "@cyneform/db";
 import type { NotificationPage, NotificationType, RoleCode } from "@cyneform/types";
-import { Injectable } from "@nestjs/common";
+import { Injectable, Optional } from "@nestjs/common";
+import type { RealtimeGateway } from "../realtime/realtime.gateway";
 
 type NewNotification = {
   type: NotificationType;
@@ -11,12 +12,19 @@ type NewNotification = {
 
 @Injectable()
 export class NotificationsService {
+  constructor(@Optional() private readonly realtime?: RealtimeGateway) {}
+
   async notify(userId: string, n: NewNotification) {
     await db.insert(notifications).values({
       userId,
       type: n.type,
       title: n.title,
       body: n.body ?? null,
+      link: n.link ?? null,
+    });
+    this.realtime?.toUser(userId, "notification", {
+      type: n.type,
+      title: n.title,
       link: n.link ?? null,
     });
   }
@@ -39,6 +47,13 @@ export class NotificationsService {
         link: n.link ?? null,
       })),
     );
+    for (const userId of ids) {
+      this.realtime?.toUser(userId, "notification", {
+        type: n.type,
+        title: n.title,
+        link: n.link ?? null,
+      });
+    }
   }
 
   async list(userId: string, limit: number): Promise<NotificationPage> {

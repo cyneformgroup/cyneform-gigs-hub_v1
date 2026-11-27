@@ -258,6 +258,18 @@ export const PERMISSIONS = [
     description: "View the admin dashboard",
     superAdminOnly: false,
   },
+  {
+    code: "privacy.self",
+    module: "privacy",
+    description: "Download my data and file data requests",
+    superAdminOnly: false,
+  },
+  {
+    code: "privacy.manage",
+    module: "privacy",
+    description: "Handle data subject requests",
+    superAdminOnly: false,
+  },
 ] as const;
 export type PermissionCode = (typeof PERMISSIONS)[number]["code"];
 
@@ -298,6 +310,8 @@ export const ROLE_DEFAULTS: Record<RoleCode, readonly PermissionCode[]> = {
     "calendar.manage",
     "reports.view_all",
     "dashboard.view",
+    "privacy.self",
+    "privacy.manage",
   ],
   bdp: [
     "leave.request",
@@ -310,5 +324,6 @@ export const ROLE_DEFAULTS: Record<RoleCode, readonly PermissionCode[]> = {
     "training.view",
     "calendar.view",
     "reports.submit_own",
+    "privacy.self",
   ],
 };

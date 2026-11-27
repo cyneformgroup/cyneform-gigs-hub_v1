@@ -72,6 +72,7 @@ export async function crawl(startUrls: string[], cfg: SourceConfig, t: Tuning) {
           if (next && sameHost(next, url) && pages < t.maxPages)
             await addRequests([{ url: next, label: "list" }]);
         }
+        t.onPage?.(pages, raws.length);
       },
       failedRequestHandler: async ({ request }, error) => {
         const message = error.message.slice(0, 300);

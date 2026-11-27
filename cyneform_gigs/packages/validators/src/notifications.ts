@@ -36,6 +36,14 @@ export const NOTIFICATION_TYPES = [
   "report.reminder",
   "report.overdue",
   "report.submitted",
+  "account.inactivity",
+  "account.frozen",
+  "vault.warning",
+  "vault.reset",
+  "account.returned",
+  "account.deleted",
+  "privacy.request",
+  "privacy.resolved",
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 

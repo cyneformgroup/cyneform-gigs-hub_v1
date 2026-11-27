@@ -5,6 +5,7 @@ import { ZodValidationPipe } from "nestjs-zod";
 import { AccessModule } from "./access/access.module";
 import { AuditModule } from "./audit/audit.module";
 import { AuthModule } from "./auth/auth.module";
+import { AutomationModule } from "./automation/automation.module";
 import { CalendarModule } from "./calendar/calendar.module";
 import { ErrorFilter } from "./common/errors";
 import { CompensationModule } from "./compensation/compensation.module";
@@ -16,6 +17,7 @@ import { LeaveModule } from "./leave/leave.module";
 import { MailModule } from "./mail/mail.module";
 import { NotificationsModule } from "./notifications/notifications.module";
 import { PointsModule } from "./points/points.module";
+import { RealtimeModule } from "./realtime/realtime.module";
 import { ReportsModule } from "./reports/reports.module";
 import { RewardsModule } from "./rewards/rewards.module";
 import { SettingsModule } from "./settings/settings.module";
@@ -27,9 +29,11 @@ import { UsersModule } from "./users/users.module";
   imports: [
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     DatabaseModule,
+    RealtimeModule,
     AuditModule,
     MailModule,
     AccessModule,
+    AutomationModule,
     AuthModule,
     UsersModule,
     LeaveModule,

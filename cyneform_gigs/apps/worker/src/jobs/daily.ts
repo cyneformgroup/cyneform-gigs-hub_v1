@@ -1,6 +1,12 @@
 import { emit } from "../events";
 
 export const dailyTasks: { name: string; run: () => Promise<void> }[] = [
+  { name: "leave-return", run: () => emit({ type: "automation.leave" }) },
+  { name: "inactivity", run: () => emit({ type: "automation.inactivity" }) },
+  { name: "vault-reset", run: () => emit({ type: "automation.vault" }) },
+  { name: "anonymize", run: () => emit({ type: "automation.anonymize" }) },
+  { name: "data-requests-due", run: () => emit({ type: "privacy.due" }) },
+  { name: "operations-cleanup", run: () => emit({ type: "ops.cleanup" }) },
   { name: "points-expiry", run: () => emit({ type: "points.expire" }) },
   { name: "crm-reminders", run: () => emit({ type: "crm.reminders" }) },
   { name: "rollover-expiry", run: () => emit({ type: "compensation.expire" }) },

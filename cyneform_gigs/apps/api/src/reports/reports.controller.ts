@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  Inject,
   Param,
   ParseUUIDPipe,
   Post,
@@ -13,9 +14,10 @@ import {
 import type { Request, Response } from "express";
 import { type AuthUser, CurrentUser, RequirePermissions } from "../access/auth-user";
 import { clientInfo } from "../common/client-info";
-import type { DashboardService } from "./dashboard.service";
-import type { AdminReportQueryDto, SubmissionQueryDto, SubmitReportDto } from "./reports.dto";
-import type { ReportsService } from "./reports.service";
+import { DashboardService } from "./dashboard.service";
+// biome-ignore lint/style/useImportType: Nest validation reads DTO classes from runtime parameter metadata.
+import { AdminReportQueryDto, SubmissionQueryDto, SubmitReportDto } from "./reports.dto";
+import { ReportsService } from "./reports.service";
 
 const send = (res: Response, pdf: Buffer, name: string) => {
   res.setHeader("Content-Type", "application/pdf");
@@ -27,8 +29,8 @@ const send = (res: Response, pdf: Buffer, name: string) => {
 @Controller()
 export class ReportsController {
   constructor(
-    private readonly reports: ReportsService,
-    private readonly dashboard: DashboardService,
+    @Inject(ReportsService) private readonly reports: ReportsService,
+    @Inject(DashboardService) private readonly dashboard: DashboardService,
   ) {}
 
   @RequirePermissions("dashboard.view")

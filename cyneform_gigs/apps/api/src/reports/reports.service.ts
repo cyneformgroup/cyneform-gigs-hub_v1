@@ -31,13 +31,13 @@ import type {
 import { eatRange, eatWeekStart, reportDeadline, weekEndDate } from "@cyneform/validators";
 import { Inject, Injectable } from "@nestjs/common";
 import type { AuthUser } from "../access/auth-user";
-import type { AuditService } from "../audit/audit.service";
+import { AuditService } from "../audit/audit.service";
 import type { ClientInfo } from "../common/client-info";
 import { badRequest, forbidden, notFound } from "../common/errors";
 import { DB, type Db } from "../database/database.module";
-import type { MailService } from "../mail/mail.service";
-import type { NotificationsService } from "../notifications/notifications.service";
-import type { PointsService } from "../points/points.service";
+import { MailService } from "../mail/mail.service";
+import { NotificationsService } from "../notifications/notifications.service";
+import { PointsService } from "../points/points.service";
 import { barChart, heading, para, renderPdf, table, title } from "./pdf";
 
 type Row = typeof weeklyReports.$inferSelect;
@@ -50,10 +50,10 @@ const kes = (n: number) => `${n.toLocaleString("en-KE", { maximumFractionDigits:
 export class ReportsService {
   constructor(
     @Inject(DB) private readonly db: Db,
-    private readonly audit: AuditService,
-    private readonly notifications: NotificationsService,
-    private readonly mail: MailService,
-    private readonly points: PointsService,
+    @Inject(AuditService) private readonly audit: AuditService,
+    @Inject(NotificationsService) private readonly notifications: NotificationsService,
+    @Inject(MailService) private readonly mail: MailService,
+    @Inject(PointsService) private readonly points: PointsService,
   ) {}
 
   // ---------- stats ----------

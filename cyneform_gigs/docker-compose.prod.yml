@@ -1,0 +1,56 @@
+services:
+  db:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?set DB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME:?set DB_NAME}
+      MARIADB_USER: ${DB_USER:?set DB_USER}
+      MARIADB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD}
+      TZ: Africa/Nairobi
+    volumes:
+      [dbdata:/var/lib/mysql, ./scripts:/scripts:ro, ./backups:/backups, uploads:/app/uploads]
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      retries: 10
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: [redisdata:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      retries: 5
+  api:
+    build: { context: ., dockerfile: Dockerfile.api }
+    restart: unless-stopped
+    env_file: .env
+    environment: { TZ: Africa/Nairobi, UPLOAD_DIR: /app/storage }
+    depends_on: { db: { condition: service_healthy }, redis: { condition: service_healthy } }
+    volumes: [uploads:/app/storage]
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "bun",
+          "-e",
+          "fetch('http://localhost:3000/api/v1/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      retries: 3
+  worker:
+    build: { context: ., dockerfile: Dockerfile.worker }
+    restart: unless-stopped
+    env_file: .env
+    environment: { TZ: Africa/Nairobi, UPLOAD_DIR: /app/storage }
+    depends_on: { api: { condition: service_healthy } }
+    volumes: [uploads:/app/storage]
+  web:
+    build:
+      { context: ., dockerfile: Dockerfile.web, args: { VITE_SENTRY_DSN: "${VITE_SENTRY_DSN:-}" } }
+    restart: unless-stopped
+    ports: ["80:80"]
+    depends_on: [api]
+volumes: { dbdata: {}, redisdata: {}, uploads: {} }
