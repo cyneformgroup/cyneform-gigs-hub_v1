@@ -15,6 +15,7 @@ export type Tuning = {
   retries: number;
   windowDays: number;
   userAgent: string;
+  onPage?: (pages: number, found: number) => void;
 };
 export type CrawlError = {
   url: string;

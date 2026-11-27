@@ -17,6 +17,7 @@ import { LeaveModule } from "./leave/leave.module";
 import { MailModule } from "./mail/mail.module";
 import { NotificationsModule } from "./notifications/notifications.module";
 import { PointsModule } from "./points/points.module";
+import { RealtimeModule } from "./realtime/realtime.module";
 import { ReportsModule } from "./reports/reports.module";
 import { RewardsModule } from "./rewards/rewards.module";
 import { SettingsModule } from "./settings/settings.module";
@@ -28,6 +29,7 @@ import { UsersModule } from "./users/users.module";
   imports: [
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     DatabaseModule,
+    RealtimeModule,
     AuditModule,
     MailModule,
     AccessModule,

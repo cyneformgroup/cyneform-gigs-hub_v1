@@ -19,8 +19,9 @@ import type { Job } from "bullmq";
 import { env } from "../env";
 import { emit } from "../events";
 import { notifyAdmins } from "../notify";
+import { publish, throttledProgress } from "../progress";
 
-async function tuning(maxPages?: number | null): Promise<Tuning> {
+async function tuning(maxPages?: number | null, onPage?: Tuning["onPage"]): Promise<Tuning> {
   return {
     maxPages: maxPages ?? (await getNumber("harvest.max_pages")),
     delayMs: await getNumber("harvest.delay_ms"),
@@ -29,6 +30,7 @@ async function tuning(maxPages?: number | null): Promise<Tuning> {
     retries: await getNumber("harvest.retries"),
     windowDays: await getNumber("harvest.window_days"),
     userAgent: env.BOT_USER_AGENT,
+    onPage,
   };
 }
 
@@ -94,6 +96,7 @@ async function runSourceJob(sourceId: string, trigger: "schedule" | "manual", by
   await db
     .insert(harvestRuns)
     .values({ id: runId, sourceId, trigger, startedBy: by, status: "running" });
+  publish({ type: "run.started", runId, sourceId, sourceName: src.name, trigger });
 
   try {
     const filters = JSON.parse(src.filters) as {
@@ -108,7 +111,7 @@ async function runSourceJob(sourceId: string, trigger: "schedule" | "manual", by
         include: filters.include,
         exclude: filters.exclude,
       },
-      await tuning(src.maxPages),
+      await tuning(src.maxPages, throttledProgress(runId, sourceId)),
     );
 
     let added = 0;
@@ -201,6 +204,19 @@ async function runSourceJob(sourceId: string, trigger: "schedule" | "manual", by
       .update(leadSources)
       .set({ health, lastRunAt: new Date() })
       .where(eq(leadSources.id, sourceId));
+    publish({
+      type: "run.finished",
+      runId,
+      sourceId,
+      sourceName: src.name,
+      status,
+      pages: r.pages,
+      found: r.found,
+      added,
+      duplicates,
+      rejected: r.rejected.length,
+      error: r.errors[0]?.message,
+    });
 
     if (health !== "healthy" && health !== src.health) {
       await notifyAdmins({
@@ -226,6 +242,19 @@ async function runSourceJob(sourceId: string, trigger: "schedule" | "manual", by
       .update(leadSources)
       .set({ health: "failed", lastRunAt: new Date() })
       .where(eq(leadSources.id, sourceId));
+    publish({
+      type: "run.finished",
+      runId,
+      sourceId,
+      sourceName: src.name,
+      status: "failed",
+      pages: 0,
+      found: 0,
+      added: 0,
+      duplicates: 0,
+      rejected: 0,
+      error: message,
+    });
     throw err;
   }
 }

@@ -1,5 +1,7 @@
 import { NavLink, Outlet, useNavigate } from "react-router";
 import { useAuth } from "../lib/auth";
+import { closeSocket } from "../lib/realtime";
+import { useLiveNotifications } from "../lib/useLive";
 import { ClaimBlock } from "./ClaimBlock";
 import { NotificationBell } from "./NotificationBell";
 import { Button } from "./ui";
@@ -34,11 +36,13 @@ const nav = [
 ];
 
 export function Layout() {
+  useLiveNotifications();
   const { user, can, logout } = useAuth();
   const navigate = useNavigate();
 
   async function signOut() {
     await logout();
+    closeSocket();
     navigate("/login", { replace: true });
   }
 

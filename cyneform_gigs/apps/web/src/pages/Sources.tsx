@@ -1,6 +1,7 @@
 import type { RunDetail, RunItem, SourceItem } from "@cyneform/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { LiveRuns } from "../components/LiveRuns";
 import { SourceForm } from "../components/sources/SourceForm";
 import { Alert, Button, Card } from "../components/ui";
 import { api, messageOf } from "../lib/api";
@@ -76,6 +77,8 @@ export function Sources() {
           <Alert tone="error">{messageOf(runNow.error ?? remove.error)}</Alert>
         )}
       </div>
+
+      {can("sources.view") && <LiveRuns />}
 
       {editing && (
         <div className="mt-6">
